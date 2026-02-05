@@ -239,18 +239,15 @@ actor {
   };
 
   public query ({ caller }) func getAllTemplates() : async [Template] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can browse templates");
-    };
+    // Publicly accessible - no authorization check required
+    // All users including guests can browse templates
     let dynamicTemplates = templates.values().toArray();
     dynamicTemplates.concat(systemTemplates);
   };
 
   public query ({ caller }) func getTemplatesByCategory(category : Category) : async [Template] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can browse templates");
-    };
-
+    // Publicly accessible - no authorization check required
+    // All users including guests can browse templates by category
     let dynamicTemplates = templates.values().toArray().filter(
       func(t) {
         t.category == category;
@@ -311,22 +308,12 @@ actor {
       Runtime.trap("Unauthorized: Only registered users can create bio pages");
     };
 
-    let profile = switch (userProfiles.get(caller)) {
+    // No subscription check - users can customize templates without active subscription
+    let _profile = switch (userProfiles.get(caller)) {
       case (null) {
         Runtime.trap("Profile not found. Please register first");
       };
       case (?profile) { profile };
-    };
-
-    let hasActiveSub = switch (profile.subscription, profile.subscriptionExpiry) {
-      case (?_, ?expiry) {
-        Time.now() < expiry;
-      };
-      case (_) { false };
-    };
-
-    if (not hasActiveSub) {
-      Runtime.trap("Subscription required to save bio page");
     };
 
     let bioPage : BioPage = {
@@ -404,18 +391,17 @@ actor {
   };
 
   public query ({ caller }) func getFamousInfluencers(category : Category) : async [UserProfile] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can view famous influencers");
-    };
+    // Publicly accessible - no authorization check required
+    // All users including guests can view famous influencers as part of template browsing
     switch (famousInfluencers.get(category)) {
       case (?list) { list.toArray() };
       case (null) { [] };
     };
   };
 
-  // New public query function for shared bios
   public query ({ caller }) func getSharedBio(shareId : ShareId) : async ?BioPage {
+    // Publicly accessible - no authorization check required
+    // Shared bios are publicly accessible to anyone including guests
     sharedBios.get(shareId);
   };
 };
-

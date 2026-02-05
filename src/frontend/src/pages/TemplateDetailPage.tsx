@@ -1,18 +1,56 @@
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { useGetAllTemplates, useHasActiveSubscription } from '../hooks/useQueries';
+import { useGetAllTemplates } from '../hooks/useQueries';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Lock, Sparkles } from 'lucide-react';
+import { Sparkles, Eye, LogIn } from 'lucide-react';
 import { Skeleton } from '../components/ui/skeleton';
+import { useEffect } from 'react';
 
 export default function TemplateDetailPage() {
   const { templateId } = useParams({ from: '/templates/$templateId' });
   const { data: templates, isLoading } = useGetAllTemplates();
-  const { data: hasSubscription, isLoading: subLoading } = useHasActiveSubscription();
+  const { identity } = useInternetIdentity();
   const navigate = useNavigate();
 
   const template = templates?.find((t) => t.id === templateId);
+
+  const isAuthenticated = !!identity;
+
+  // Disable right-click, keyboard shortcuts, and other screenshot methods
+  useEffect(() => {
+    const preventScreenshot = (e: Event) => {
+      e.preventDefault();
+      return false;
+    };
+
+    const preventKeyboardShortcuts = (e: KeyboardEvent) => {
+      // Prevent Print Screen, Cmd+Shift+3/4/5 (Mac), Windows+Shift+S, etc.
+      if (
+        e.key === 'PrintScreen' ||
+        (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key)) ||
+        (e.key === 's' && e.metaKey && e.shiftKey) ||
+        (e.key === 's' && e.ctrlKey && e.shiftKey)
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    // Prevent context menu (right-click)
+    document.addEventListener('contextmenu', preventScreenshot);
+    // Prevent keyboard shortcuts
+    document.addEventListener('keydown', preventKeyboardShortcuts);
+    // Prevent drag and drop
+    document.addEventListener('dragstart', preventScreenshot);
+
+    return () => {
+      document.removeEventListener('contextmenu', preventScreenshot);
+      document.removeEventListener('keydown', preventKeyboardShortcuts);
+      document.removeEventListener('dragstart', preventScreenshot);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -40,8 +78,8 @@ export default function TemplateDetailPage() {
   }
 
   const handleCopyTemplate = () => {
-    if (!hasSubscription) {
-      navigate({ to: '/pricing' });
+    if (!isAuthenticated) {
+      navigate({ to: '/' });
     } else {
       navigate({ to: '/editor/$templateId', params: { templateId: template.id } });
     }
@@ -60,13 +98,19 @@ export default function TemplateDetailPage() {
           </div>
         </div>
 
-        <Card className="overflow-hidden border-primary/20">
-          <div className="aspect-[3/4] md:aspect-video bg-muted">
+        <Card className="overflow-hidden border-primary/20 screenshot-protected">
+          <div className="aspect-[3/4] md:aspect-video bg-muted relative">
             <img
               src={template.thumbnail.getDirectURL()}
               alt={template.name}
-              className="object-cover w-full h-full"
+              className="object-cover w-full h-full select-none pointer-events-none"
+              draggable="false"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-2">
+              <Eye className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Preview Only</span>
+            </div>
           </div>
         </Card>
 
@@ -75,9 +119,9 @@ export default function TemplateDetailPage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold">Ready to use this template?</h2>
               <p className="text-muted-foreground">
-                {hasSubscription
-                  ? 'Click below to copy this template and start customizing it with your own content.'
-                  : 'Subscribe to Premium or Pro to copy and customize this template with your own links, bio, and social handles.'}
+                {!isAuthenticated
+                  ? 'Login to copy and customize this template with your own links, bio, and social handles.'
+                  : 'Click below to copy this template and start customizing it with your own content.'}
               </p>
             </div>
 
@@ -85,18 +129,17 @@ export default function TemplateDetailPage() {
               <Button
                 size="lg"
                 onClick={handleCopyTemplate}
-                disabled={subLoading}
                 className="flex-1 text-lg py-6"
               >
-                {hasSubscription ? (
+                {!isAuthenticated ? (
                   <>
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Copy & Customize
+                    <LogIn className="h-5 w-5 mr-2" />
+                    Login to Customize
                   </>
                 ) : (
                   <>
-                    <Lock className="h-5 w-5 mr-2" />
-                    Subscribe to Use
+                    <Sparkles className="h-5 w-5 mr-2" />
+                    Copy & Customize
                   </>
                 )}
               </Button>

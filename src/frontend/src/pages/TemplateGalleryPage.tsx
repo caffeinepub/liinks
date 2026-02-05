@@ -4,9 +4,11 @@ import { CATEGORIES } from '../constants/categories';
 import TemplateCard from '../components/TemplateCard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 
 export default function TemplateGalleryPage() {
-  const { data: templates, isLoading } = useGetAllTemplates();
+  const { data: templates, isLoading, error } = useGetAllTemplates();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const filteredTemplates = selectedCategory === 'all'
@@ -18,12 +20,22 @@ export default function TemplateGalleryPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold">
-            Premium Templates
+            Bio Page Templates
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose from our collection of professionally designed bio page templates
+            Browse our collection of professionally designed bio page templates. Customize any template to create your perfect link-in-bio page.
           </p>
         </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error loading templates</AlertTitle>
+            <AlertDescription>
+              There was an issue loading templates from the server. Showing default templates instead.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
           <div className="overflow-x-auto pb-2">

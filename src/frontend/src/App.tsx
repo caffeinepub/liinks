@@ -108,21 +108,13 @@ const signupRoute = createRoute({
 const galleryRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/templates',
-  component: () => (
-    <RequireRegistered>
-      <TemplateGalleryPage />
-    </RequireRegistered>
-  ),
+  component: TemplateGalleryPage,
 });
 
 const templateDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/templates/$templateId',
-  component: () => (
-    <RequireRegistered>
-      <TemplateDetailPage />
-    </RequireRegistered>
-  ),
+  component: TemplateDetailPage,
 });
 
 const editorRoute = createRoute({
@@ -138,11 +130,7 @@ const editorRoute = createRoute({
 const pricingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/pricing',
-  component: () => (
-    <RequireRegistered>
-      <PricingPage />
-    </RequireRegistered>
-  ),
+  component: PricingPage,
 });
 
 const checkoutRoute = createRoute({

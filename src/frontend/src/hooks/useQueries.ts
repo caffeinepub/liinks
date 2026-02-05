@@ -45,20 +45,26 @@ export function useGetAllTemplates() {
   return useQuery<Template[]>({
     queryKey: ['templates'],
     queryFn: async () => {
-      if (!actor) return SEED_TEMPLATES;
+      if (!actor) {
+        console.log('Actor not available, using seed templates');
+        return SEED_TEMPLATES;
+      }
       try {
         const backendTemplates = await actor.getAllTemplates();
-        // If backend returns empty, use seed templates as fallback
-        if (backendTemplates.length === 0) {
-          return SEED_TEMPLATES;
-        }
-        return backendTemplates;
+        console.log('Backend templates fetched:', backendTemplates.length);
+        const mergedTemplates = [...backendTemplates, ...SEED_TEMPLATES];
+        const uniqueTemplates = Array.from(
+          new Map(mergedTemplates.map(t => [t.id, t])).values()
+        );
+        return uniqueTemplates;
       } catch (error) {
-        console.error('Failed to fetch templates, using seed templates:', error);
+        console.error('Failed to fetch templates from backend, using seed templates:', error);
         return SEED_TEMPLATES;
       }
     },
-    enabled: !!actor && !isFetching,
+    enabled: !isFetching,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: SEED_TEMPLATES,
   });
 }
 
@@ -68,20 +74,25 @@ export function useGetTemplatesByCategory(category: Category) {
   return useQuery<Template[]>({
     queryKey: ['templates', category],
     queryFn: async () => {
-      if (!actor) return SEED_TEMPLATES.filter((t) => t.category === category);
+      if (!actor) {
+        return SEED_TEMPLATES.filter((t) => t.category === category);
+      }
       try {
         const backendTemplates = await actor.getTemplatesByCategory(category);
-        // If backend returns empty, filter seed templates
-        if (backendTemplates.length === 0) {
-          return SEED_TEMPLATES.filter((t) => t.category === category);
-        }
-        return backendTemplates;
+        const seedForCategory = SEED_TEMPLATES.filter((t) => t.category === category);
+        const mergedTemplates = [...backendTemplates, ...seedForCategory];
+        const uniqueTemplates = Array.from(
+          new Map(mergedTemplates.map(t => [t.id, t])).values()
+        );
+        return uniqueTemplates;
       } catch (error) {
         console.error('Failed to fetch templates by category, using seed templates:', error);
         return SEED_TEMPLATES.filter((t) => t.category === category);
       }
     },
-    enabled: !!actor && !isFetching && !!category,
+    enabled: !isFetching && !!category,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: SEED_TEMPLATES.filter((t) => t.category === category),
   });
 }
 

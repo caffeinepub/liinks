@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 13,
-  "summary": "Subscription-based Liinks link-in-bio template marketplace on Internet Computer (Motoko backend, React/Vite/Tailwind frontend) with expanded seeded template library (target: 10+ bio-style variants per category) and paywall gating adjusted so template viewing is free while copying/downloading/customizing requires Premium/Pro subscription (INR payments via Razorpay + UPI QR).",
+  "projectStateVersion": 26,
+  "summary": "Liinks link-in-bio template marketplace on Internet Computer with Motoko backend and React/Vite/Tailwind frontend; includes influencer/category template library and signup with user profile fields. Subscription/paywall gating is to be removed so templates and template content are viewable without requiring a subscription/payment.",
   "existing_features": [
     {
       "id": "IF-1",
@@ -219,19 +219,57 @@
         "REQ-3"
       ],
       "version": 1
+    },
+    {
+      "id": "IF-20",
+      "title": "Public shared bio page (shareable link-in-bio view)",
+      "synonyms": [
+        "SharedBioPage",
+        "public profile page",
+        "share link"
+      ],
+      "description": "Frontend includes a dedicated SharedBioPage route to render a public, shareable link-in-bio view for a template/profile without requiring the editor flow.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-make-template-browsing-and-viewing-work-for-all-users-including-guests-and-unregistered-users-so-the-template-gallery-and-template-detail-pages-always-show-template-content",
+      "title": "Make template browsing and viewing work for all users (including guests and unregistered users) so the Template Gallery and Template Detail pages always show template content.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-subscription-paywall-gating-from-the-template-flow-so-users-are-not-blocked-from-copying-customizing-templates-due-to-subscription-status",
+      "title": "Remove subscription/paywall gating from the template flow so users are not blocked from copying/customizing templates due to subscription status.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Seed at least 10 templates of different bio styles in each influencer/category.",
+      "summary": "Remove subscription/paywall gating so users can view and see template content without a subscription",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-2",
-      "summary": "Adjust paywall gating: allow viewing templates without subscription; require subscription only when user proceeds to copy/download/customize.",
-      "reqIds": [],
+      "id": "AR-4",
+      "summary": "Remove subscription enforcement from backend operations involved in customizing templates so saving a bio page does not require an active subscription.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Make template listing endpoints publicly accessible (no registration/role requirement) so template content can be fetched from the backend without requiring a registered user permission.",
+      "reqIds": [
+        "REQ-8"
+      ],
       "status": "pending"
     }
   ],
@@ -243,10 +281,14 @@
     "Payments must support Indian Rupees pricing tiers (₹199 Premium, ₹499 Pro) and integrate Razorpay; include UPI receiver ID and QR upload UI for payments.",
     "Frontend introduces consolidated query/hooks layer to fetch subscription/payment configuration and keep subscription state in sync post-checkout.",
     "Backend exposes/configures receiver payment details (e.g., UPI ID) for consumption by Checkout UI.",
-    "Paywall rules: template gallery/detail viewing is public; subscription is required only for actions like copy/download/customize (and Pro-only uploads)."
+    "Upgraded Motoko authorization and blob-storage components to v4.0.0 (component refresh across backend modules).",
+    "Refreshed/expanded ICP React build-template workspace and tooling (component:core-infrastructure v1.0.2; build-template-react v1.0.0; shadcn-ui v1.0.0).",
+    "Project includes GitHub export tooling/integration for ICP CLI workflows (component:github-export-icp-cli v1.0.0)."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Users currently cannot view/see any template content (template gallery/detail appears blocked/empty), likely due to subscription gating or access checks."
+  ],
+  "isFixRequest": true,
   "generatedImages": [
     {
       "filename": "frontend/public/assets/generated/liinks-hero-bg.dim_1920x1080.png",

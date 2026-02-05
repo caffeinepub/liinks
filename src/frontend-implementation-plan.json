@@ -1,6 +1,70 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Untitled request",
-  "requirements": []
+  "title": "Unblock guest template viewing and remove subscription/paywall gating in template flow (frontend-only)",
+  "requirements": [
+    {
+      "id": "REQ-5",
+      "summary": "Ensure Template Gallery and Template Detail always render template content for guests, with resilient fallback to seed templates when backend template fetch fails.",
+      "acceptanceCriteria": [
+        "Visiting /templates while logged out renders a non-empty grid of templates (at minimum the existing seed templates) with each card showing name, category, and description.",
+        "Visiting /templates/$templateId while logged out renders the template detail page content (title, category badge, description, and preview image area) without crashing.",
+        "If the backend call to fetch templates fails or is unauthorized, the UI still renders templates via the existing seed template fallback (no blank/empty page)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Harden template fetching to always return a non-empty fallback (SEED_TEMPLATES) on any backend failure/unauthorized scenario, and ensure the query never resolves to an empty/undefined list for guest browsing."
+        },
+        {
+          "path": "frontend/src/pages/TemplateGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Ensure logged-out users see a non-empty gallery by relying on the existing hook fallback; adjust empty/error rendering so the page never appears blank when backend templates are unavailable."
+        },
+        {
+          "path": "frontend/src/pages/TemplateDetailPage.tsx",
+          "operation": "modify",
+          "description": "Make the template detail view robust for guest access by rendering a stable preview image area even when thumbnail data is missing/unexpected, and avoid any crashes when templates load via fallback seed data."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Remove subscription/paywall gating from routing, CTAs, and UI copy so users can copy/customize templates without subscription checks.",
+      "acceptanceCriteria": [
+        "Remove the router-level subscription guard so the editor route /editor/$templateId is not wrapped by RequireSubscription in frontend/src/App.tsx.",
+        "Template detail CTA no longer routes users to /pricing due to missing subscription; the primary CTA should only depend on authentication/registration requirements (e.g., prompt login if logged out, otherwise allow continuing to editor).",
+        "All user-facing copy on TemplateGalleryPage, TemplateDetailPage, and TemplateEditorPage is updated to remove subscription-required messaging (use English text).",
+        "Brand header subscription badge is removed or no longer depends on subscription state (no Premium/Pro badge based on subscription)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Remove subscription gating from /editor/$templateId by unwrapping RequireSubscription; wire the editor route to only enforce authentication/registration requirements (e.g., RequireRegistered) without any subscription checks."
+        },
+        {
+          "path": "frontend/src/pages/TemplateDetailPage.tsx",
+          "operation": "modify",
+          "description": "Remove subscription-based CTA logic: drop subscription query usage, stop routing to /pricing for template copying, and update CTA labels/copy so authenticated (and registered via route guard) users can proceed to the editor."
+        },
+        {
+          "path": "frontend/src/pages/TemplateEditorPage.tsx",
+          "operation": "modify",
+          "description": "Remove all subscription enforcement in the editor UI: delete subscription checks/redirects/blocking states, update error/toast messaging to no longer mention subscriptions, and keep only login/registration-dependent behavior."
+        },
+        {
+          "path": "frontend/src/pages/TemplateGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Update gallery page headline/description and any messaging to remove subscription-required/premium gating language while keeping template browsing behavior unchanged."
+        },
+        {
+          "path": "frontend/src/components/BrandHeader.tsx",
+          "operation": "modify",
+          "description": "Remove the subscription badge (Premium/Pro) from the header and eliminate any header UI that depends on subscription state for displaying subscription tier."
+        }
+      ]
+    }
+  ]
 }
