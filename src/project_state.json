@@ -1,0 +1,274 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 13,
+  "summary": "Subscription-based Liinks link-in-bio template marketplace on Internet Computer (Motoko backend, React/Vite/Tailwind frontend) with expanded seeded template library (target: 10+ bio-style variants per category) and paywall gating adjusted so template viewing is free while copying/downloading/customizing requires Premium/Pro subscription (INR payments via Razorpay + UPI QR).",
+  "existing_features": [
+    {
+      "id": "IF-1",
+      "title": "Motoko backend canister with access control (authorization mixin)",
+      "synonyms": [
+        "authorization",
+        "access control"
+      ],
+      "description": "Backend includes reusable authorization/access-control modules and integrates authorization mixins into the main canister.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-2",
+      "title": "Motoko blob storage canister module",
+      "synonyms": [
+        "blob storage",
+        "asset storage"
+      ],
+      "description": "Backend includes blob-storage mixin and storage implementation for handling uploaded binary assets (e.g., templates/images).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-3",
+      "title": "Frontend app scaffold (React + Vite + Tailwind + shadcn/ui)",
+      "synonyms": [
+        "frontend scaffold",
+        "UI kit"
+      ],
+      "description": "React app configured with Tailwind and a large set of shadcn/ui components plus project ESLint rules and tooling.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-4",
+      "title": "Internet Identity authentication hook + actor wiring",
+      "synonyms": [
+        "Internet Identity",
+        "auth",
+        "useActor"
+      ],
+      "description": "Frontend includes hooks/utilities to authenticate with Internet Identity and create backend actors for canister calls.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-5",
+      "title": "Landing page UI",
+      "synonyms": [
+        "home page"
+      ],
+      "description": "Landing page implemented as a dedicated route/page in the frontend.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-6",
+      "title": "Pricing page UI",
+      "synonyms": [],
+      "description": "Pricing page implemented as a dedicated route/page in the frontend.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-7",
+      "title": "Signup page UI",
+      "synonyms": [
+        "registration"
+      ],
+      "description": "Signup page implemented as a dedicated route/page.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-8",
+      "title": "Checkout page UI",
+      "synonyms": [
+        "payments"
+      ],
+      "description": "Checkout page implemented as a dedicated route/page.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-9",
+      "title": "Template gallery, detail, and editor pages",
+      "synonyms": [
+        "template browsing",
+        "template editing"
+      ],
+      "description": "Frontend pages for browsing templates, viewing template details, and editing templates (TemplateGalleryPage, TemplateDetailPage, TemplateEditorPage).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-10",
+      "title": "Template upload page and asset upload utilities",
+      "synonyms": [
+        "upload template",
+        "asset uploader"
+      ],
+      "description": "Frontend includes UploadTemplatePage and supporting storage client utilities for uploading and managing assets.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-11",
+      "title": "Template editor components for links, social handles, and payment QR upload",
+      "synonyms": [
+        "LinksEditor",
+        "SocialHandlesEditor",
+        "PaymentQrUploader"
+      ],
+      "description": "Reusable UI components enabling editing of links and social handles and uploading a payment QR image, plus supporting template/brand UI components.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-12",
+      "title": "ICP build/deploy template and project scaffolding",
+      "synonyms": [
+        "build template",
+        "deployment template"
+      ],
+      "description": "Included build-template with Dockerfile, scripts (prune/resize images), canister YAMLs, workspace configs, and deployment scripts for ICP.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-13",
+      "title": "Influencer/category template library with seeded published templates",
+      "synonyms": [
+        "template library",
+        "seed templates",
+        "categories"
+      ],
+      "description": "Includes an initial set of premium-quality, published templates organized by the existing category list so the Template Gallery is populated for new users after signup.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-14",
+      "title": "Subscription/paywall gating for Premium and Pro tiers",
+      "synonyms": [
+        "paywall",
+        "subscription gating",
+        "premium/pro access"
+      ],
+      "description": "Implements Premium (₹199) and Pro (₹499) subscription state and gates actions like template copying/customization and Pro-only template uploads based on active subscription.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-15",
+      "title": "INR checkout flow with Razorpay/UPI details and QR upload/display",
+      "synonyms": [
+        "Razorpay",
+        "UPI",
+        "checkout"
+      ],
+      "description": "Checkout supports INR pricing and displays receiver payment details (e.g., UPI ID) and UPI QR, enabling users to complete the payment confirmation flow for subscription activation.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-16",
+      "title": "Backend-configurable receiver payment details surfaced in Checkout",
+      "synonyms": [
+        "receiver config",
+        "UPI receiver",
+        "payment settings"
+      ],
+      "description": "Receiver payment details (at minimum receiver UPI ID) are configurable in the backend and fetched/displayed in the frontend Checkout instead of being hardcoded.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-17",
+      "title": "Expanded signup form fields (first/last name, phone, email)",
+      "synonyms": [
+        "signup fields",
+        "registration fields"
+      ],
+      "description": "Signup UX collects first name, last name, phone number, and email as part of registration.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-18",
+      "title": "In-app upgrade CTAs from template browsing to Pricing/Checkout",
+      "synonyms": [
+        "upgrade CTA",
+        "pricing navigation"
+      ],
+      "description": "Non-subscribed users are prompted within template browsing (gallery/detail) to upgrade, with clear calls-to-action navigating to Pricing and then Checkout.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-19",
+      "title": "End-to-end subscription activation with live UI state updates",
+      "synonyms": [
+        "subscription refresh",
+        "post-checkout activation"
+      ],
+      "description": "After payment confirmation on Checkout, subscription state updates in-app and gated actions become available without requiring manual page refresh.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Seed at least 10 templates of different bio styles in each influencer/category.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Adjust paywall gating: allow viewing templates without subscription; require subscription only when user proceeds to copy/download/customize.",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "architectural_notes": [
+    "Backend is implemented in Motoko and composes reusable modules for authorization (access control) and blob storage.",
+    "Frontend is a React + Vite app using TailwindCSS and shadcn/ui component library.",
+    "Authentication integrates Internet Identity via frontend hooks and actor creation utilities.",
+    "Project includes an ICP deployment/build template with canister configuration, scripts, and workspace tooling.",
+    "Payments must support Indian Rupees pricing tiers (₹199 Premium, ₹499 Pro) and integrate Razorpay; include UPI receiver ID and QR upload UI for payments.",
+    "Frontend introduces consolidated query/hooks layer to fetch subscription/payment configuration and keep subscription state in sync post-checkout.",
+    "Backend exposes/configures receiver payment details (e.g., UPI ID) for consumption by Checkout UI.",
+    "Paywall rules: template gallery/detail viewing is public; subscription is required only for actions like copy/download/customize (and Pro-only uploads)."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "generatedImages": [
+    {
+      "filename": "frontend/public/assets/generated/liinks-hero-bg.dim_1920x1080.png",
+      "description": "Generated hero background image asset for the landing/brand UI.",
+      "targetWidth": 1920,
+      "targetHeight": 1080
+    },
+    {
+      "filename": "frontend/public/assets/generated/liinks-logo.dim_512x512.png",
+      "description": "Generated logo image asset for branding.",
+      "targetWidth": 512,
+      "targetHeight": 512
+    },
+    {
+      "filename": "frontend/public/assets/generated/qr-placeholder-frame.dim_800x800.png",
+      "description": "Generated placeholder frame image for QR/payment uploader UI.",
+      "targetWidth": 800,
+      "targetHeight": 800
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Liinks",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
