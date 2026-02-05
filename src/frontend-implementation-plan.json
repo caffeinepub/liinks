@@ -1,68 +1,130 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Unblock guest template viewing and remove subscription/paywall gating in template flow (frontend-only)",
+  "title": "Top influencers dataset, richer seeded template content, and varied template thumbnail designs",
   "requirements": [
     {
       "id": "REQ-5",
-      "summary": "Ensure Template Gallery and Template Detail always render template content for guests, with resilient fallback to seed templates when backend template fetch fails.",
+      "summary": "Add a curated hard-coded “top influencers” dataset (with Instagram handles) grouped by template category and show it on template detail.",
       "acceptanceCriteria": [
-        "Visiting /templates while logged out renders a non-empty grid of templates (at minimum the existing seed templates) with each card showing name, category, and description.",
-        "Visiting /templates/$templateId while logged out renders the template detail page content (title, category badge, description, and preview image area) without crashing.",
-        "If the backend call to fetch templates fails or is unauthorized, the UI still renders templates via the existing seed template fallback (no blank/empty page)."
+        "A new frontend data module exists (e.g., in frontend/src/data/...) containing a curated list of top influencers with at least: display name, instagramHandle, category.",
+        "TemplateDetailPage shows a “Top influencers in <category>” section for the viewed template’s category, listing influencer names and their @handles.",
+        "Instagram handles are rendered as clickable links to https://instagram.com/<handle> (opening in a new tab with noopener/noreferrer).",
+        "If no influencers exist for a category, the UI hides the section (no empty state block)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Harden template fetching to always return a non-empty fallback (SEED_TEMPLATES) on any backend failure/unauthorized scenario, and ensure the query never resolves to an empty/undefined list for guest browsing."
-        },
-        {
-          "path": "frontend/src/pages/TemplateGalleryPage.tsx",
-          "operation": "modify",
-          "description": "Ensure logged-out users see a non-empty gallery by relying on the existing hook fallback; adjust empty/error rendering so the page never appears blank when backend templates are unavailable."
+          "path": "frontend/src/data/topInfluencers.ts",
+          "operation": "create",
+          "description": "Create a curated, hard-coded influencers dataset exported from a dedicated data module; include at least displayName, instagramHandle, and category, and provide helper utilities (e.g., lookup by category) for use in the template browsing/detail UI."
         },
         {
           "path": "frontend/src/pages/TemplateDetailPage.tsx",
           "operation": "modify",
-          "description": "Make the template detail view robust for guest access by rendering a stable preview image area even when thumbnail data is missing/unexpected, and avoid any crashes when templates load via fallback seed data."
+          "description": "Import the curated influencers dataset and render a “Top influencers in <category>” section for the current template’s category; list influencer display names and clickable Instagram @handle links pointing to https://instagram.com/<handle> and opening in a new tab with noopener/noreferrer; hide the entire section when the category has no influencers. Use existing shadcn/Tailwind components for layout and typography (do not edit components/ui)."
         }
       ]
     },
     {
       "id": "REQ-6",
-      "summary": "Remove subscription/paywall gating from routing, CTAs, and UI copy so users can copy/customize templates without subscription checks.",
+      "summary": "Seed richer default template content via editableContent (JSON encoded to bytes) and load/apply it in the template editor with robust fallback behavior.",
       "acceptanceCriteria": [
-        "Remove the router-level subscription guard so the editor route /editor/$templateId is not wrapped by RequireSubscription in frontend/src/App.tsx.",
-        "Template detail CTA no longer routes users to /pricing due to missing subscription; the primary CTA should only depend on authentication/registration requirements (e.g., prompt login if logged out, otherwise allow continuing to editor).",
-        "All user-facing copy on TemplateGalleryPage, TemplateDetailPage, and TemplateEditorPage is updated to remove subscription-required messaging (use English text).",
-        "Brand header subscription badge is removed or no longer depends on subscription state (no Premium/Pro badge based on subscription)."
+        "Seed templates in frontend/src/data/seedTemplates.ts include non-empty editableContent for each template, encoding JSON that can provide defaults for: title, bioText, socialHandles[], links[].",
+        "TemplateEditorPage parses template.editableContent when present and uses it to initialize the editor state (title, bioText, socialHandles, links) instead of only using template.name/description.",
+        "If editableContent is missing/empty/invalid JSON, TemplateEditorPage falls back to current behavior (title=template.name, bioText=template.description, empty links/handles) without crashing.",
+        "At least one seeded template demonstrates multiple default links and at least one default social handle being pre-filled in the editor."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/data/seedTemplates.ts",
           "operation": "modify",
-          "description": "Remove subscription gating from /editor/$templateId by unwrapping RequireSubscription; wire the editor route to only enforce authentication/registration requirements (e.g., RequireRegistered) without any subscription checks."
-        },
-        {
-          "path": "frontend/src/pages/TemplateDetailPage.tsx",
-          "operation": "modify",
-          "description": "Remove subscription-based CTA logic: drop subscription query usage, stop routing to /pricing for template copying, and update CTA labels/copy so authenticated (and registered via route guard) users can proceed to the editor."
+          "description": "Update every seeded template to include a non-empty editableContent Uint8Array containing a JSON payload (encode with TextEncoder) that can provide defaults for title, bioText, socialHandles[], and links[]. Ensure at least one template includes multiple default links and at least one default social handle in its JSON defaults. Also adjust any seed data helpers as needed to keep the file maintainable."
         },
         {
           "path": "frontend/src/pages/TemplateEditorPage.tsx",
           "operation": "modify",
-          "description": "Remove all subscription enforcement in the editor UI: delete subscription checks/redirects/blocking states, update error/toast messaging to no longer mention subscriptions, and keep only login/registration-dependent behavior."
+          "description": "Add logic to decode template.editableContent (TextDecoder), parse JSON safely, validate expected fields, and initialize editor state (title, bioText, socialHandles, links) from it when present. If editableContent is missing/empty/invalid, fall back to the current initialization behavior without crashing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Introduce various designs by adding multiple distinct generated thumbnail images and wiring seeded templates to use them via ExternalBlob.fromURL.",
+      "acceptanceCriteria": [
+        "New thumbnail images are added under frontend/public/assets/generated and referenced from seed templates via ExternalBlob.fromURL(...).",
+        "Seed templates across multiple categories use different thumbnails (not all pointing to liinks-logo or liinks-hero-bg).",
+        "Template gallery cards and template detail preview correctly render the new thumbnails without layout regressions."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png",
+          "operation": "create",
+          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+        },
+        {
+          "path": "frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png",
+          "operation": "create",
+          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+        },
+        {
+          "path": "frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png",
+          "operation": "create",
+          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+        },
+        {
+          "path": "frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png",
+          "operation": "create",
+          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+        },
+        {
+          "path": "frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png",
+          "operation": "create",
+          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+        },
+        {
+          "path": "frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png",
+          "operation": "create",
+          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+        },
+        {
+          "path": "frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png",
+          "operation": "create",
+          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+        },
+        {
+          "path": "frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png",
+          "operation": "create",
+          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+        },
+        {
+          "path": "frontend/src/data/seedTemplates.ts",
+          "operation": "modify",
+          "description": "Update seeded templates across multiple categories to reference the new generated thumbnail images via ExternalBlob.fromURL(...) (e.g., /assets/generated/template-thumb-abstract-01.dim_800x1067.png, etc.) so the gallery/detail no longer reuses liinks-logo/liinks-hero-bg for most templates. Use the blob-storage ExternalBlob.fromURL capability for static asset-backed thumbnails; verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Improve template gallery/detail layout to accommodate longer descriptions and the influencer section with consistent spacing and readable typography.",
+      "acceptanceCriteria": [
+        "TemplateCard and TemplateDetailPage continue to look balanced with longer template descriptions (no overflow outside cards; text remains clamped or wrapped appropriately).",
+        "The influencer section visually matches the existing shadcn/Tailwind styling (uses existing UI components where appropriate) and remains readable in light/dark mode."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/TemplateCard.tsx",
+          "operation": "modify",
+          "description": "Adjust card typography/layout to better handle longer template descriptions without overflow (e.g., refine line clamping, spacing, and/or consistent content height) while keeping the overall visual balance and avoiding layout regressions."
+        },
+        {
+          "path": "frontend/src/pages/TemplateDetailPage.tsx",
+          "operation": "modify",
+          "description": "Refine spacing and typography on the detail page to accommodate longer descriptions and the influencer section (consistent vertical rhythm, readable text in light/dark mode). Compose existing shadcn/Tailwind components (do not edit components/ui) so the influencer section matches the rest of the design."
         },
         {
           "path": "frontend/src/pages/TemplateGalleryPage.tsx",
           "operation": "modify",
-          "description": "Update gallery page headline/description and any messaging to remove subscription-required/premium gating language while keeping template browsing behavior unchanged."
-        },
-        {
-          "path": "frontend/src/components/BrandHeader.tsx",
-          "operation": "modify",
-          "description": "Remove the subscription badge (Premium/Pro) from the header and eliminate any header UI that depends on subscription state for displaying subscription tier."
+          "description": "If needed to maintain a balanced gallery with richer content, tweak grid spacing and/or surrounding layout so cards remain visually consistent as descriptions become longer (without introducing new routes or editing components/ui)."
         }
       ]
     }

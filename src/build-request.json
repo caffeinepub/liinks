@@ -1,92 +1,113 @@
 {
   "kind": "build_request",
-  "title": "Unblock template viewing and remove subscription/paywall gating",
-  "priority": "high",
+  "title": "Add top influencer Instagram handles and richer, varied template content/designs",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-5",
-      "text": "Make template browsing and viewing work for all users (including guests and unregistered users) so the Template Gallery and Template Detail pages always show template content.",
-      "target": "both",
+      "text": "Add a curated, hard-coded dataset of “top influencers” with Instagram handles, grouped by template category, and surface it in the template browsing experience.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-3"
         ],
         "quotes": [
-          "I CANT VIEW AND SEE ANY  TEMPLATE CONTENT"
+          "I need you to add top influencers  instagram  handle"
         ]
       },
       "acceptanceCriteria": [
-        "Visiting /templates while logged out renders a non-empty grid of templates (at minimum the existing seed templates) with each card showing name, category, and description.",
-        "Visiting /templates/$templateId while logged out renders the template detail page content (title, category badge, description, and preview image area) without crashing.",
-        "If the backend call to fetch templates fails or is unauthorized, the UI still renders templates via the existing seed template fallback (no blank/empty page)."
+        "A new frontend data module exists (e.g., in frontend/src/data/...) containing a curated list of top influencers with at least: display name, instagramHandle, category.",
+        "TemplateDetailPage shows a “Top influencers in <category>” section for the viewed template’s category, listing influencer names and their @handles.",
+        "Instagram handles are rendered as clickable links to https://instagram.com/<handle> (opening in a new tab with noopener/noreferrer).",
+        "If no influencers exist for a category, the UI hides the section (no empty state block)."
       ]
     },
     {
       "id": "REQ-6",
-      "text": "Remove subscription/paywall gating from the template flow so users are not blocked from copying/customizing templates due to subscription status.",
+      "text": "Add richer default content for each seeded template by populating template.editableContent with a JSON payload (encoded as bytes) and update the template editor to load and apply this content when available.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-3"
         ],
         "quotes": [
-          "REMOVE THE SUBSCRIPTION THING"
+          "and add content for each template"
         ]
       },
       "acceptanceCriteria": [
-        "Remove the router-level subscription guard so the editor route /editor/$templateId is not wrapped by RequireSubscription in frontend/src/App.tsx.",
-        "Template detail CTA no longer routes users to /pricing due to missing subscription; the primary CTA should only depend on authentication/registration requirements (e.g., prompt login if logged out, otherwise allow continuing to editor).",
-        "All user-facing copy on TemplateGalleryPage, TemplateDetailPage, and TemplateEditorPage is updated to remove subscription-required messaging (use English text).",
-        "Brand header subscription badge is removed or no longer depends on subscription state (no Premium/Pro badge based on subscription)."
+        "Seed templates in frontend/src/data/seedTemplates.ts include non-empty editableContent for each template, encoding JSON that can provide defaults for: title, bioText, socialHandles[], links[].",
+        "TemplateEditorPage parses template.editableContent when present and uses it to initialize the editor state (title, bioText, socialHandles, links) instead of only using template.name/description.",
+        "If editableContent is missing/empty/invalid JSON, TemplateEditorPage falls back to current behavior (title=template.name, bioText=template.description, empty links/handles) without crashing.",
+        "At least one seeded template demonstrates multiple default links and at least one default social handle being pre-filled in the editor."
       ]
     },
     {
       "id": "REQ-7",
-      "text": "Remove subscription enforcement from backend operations involved in customizing templates so saving a bio page does not require an active subscription.",
-      "target": "backend",
+      "text": "Introduce “various designs” across the template set by adding multiple visually distinct template thumbnail images and wiring seeded templates to use them (instead of reusing the same logo/hero background for most templates).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-3"
         ],
         "quotes": [
-          "REMOVE THE SUBSCRIPTION THING"
+          "and design  it  through various designs"
         ]
       },
       "acceptanceCriteria": [
-        "backend/main.mo: createBioPage no longer checks subscription/subscriptionExpiry and no longer traps with \"Subscription required to save bio page\".",
-        "Authenticated, registered users without any subscription can create/save a bio page successfully using the existing frontend editor save flow.",
-        "No migration is introduced unless required by compilation/state changes (follow conditional migration policy)."
+        "New thumbnail images are added under frontend/public/assets/generated and referenced from seed templates via ExternalBlob.fromURL(...).",
+        "Seed templates across multiple categories use different thumbnails (not all pointing to liinks-logo or liinks-hero-bg).",
+        "Template gallery cards and template detail preview correctly render the new thumbnails without layout regressions."
       ]
     },
     {
       "id": "REQ-8",
-      "text": "Make template listing endpoints publicly accessible (no registration/role requirement) so template content can be fetched from the backend without requiring a registered user permission.",
-      "target": "backend",
+      "text": "Update the template gallery and/or template detail UI to better accommodate and present the new richer content (longer descriptions and the influencer section) with consistent spacing and readable typography.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-3"
         ],
         "quotes": [
-          "I CANT VIEW AND SEE ANY  TEMPLATE CONTENT"
+          "add content for each template"
         ]
       },
       "acceptanceCriteria": [
-        "backend/main.mo: getAllTemplates and getTemplatesByCategory no longer trap based on AccessControl.hasPermission(..., #user).",
-        "Calling getAllTemplates as an anonymous/guest caller returns an array (may include dynamic templates and/or system templates) instead of trapping.",
-        "Frontend template gallery can fetch backend templates without requiring the user to be registered."
+        "TemplateCard and TemplateDetailPage continue to look balanced with longer template descriptions (no overflow outside cards; text remains clamped or wrapped appropriately).",
+        "The influencer section visually matches the existing shadcn/Tailwind styling (uses existing UI components where appropriate) and remains readable in light/dark mode."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor with logic in backend/main.mo; only add backend/migration.mo if an actual state upgrade is required.",
-    "Do not edit files under frontend/src/components/ui or the immutable hook paths listed in SYSTEM_CONTEXT."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files in frontend/src/components/ui or other frontend immutable paths listed in SYSTEM_CONTEXT; compose existing UI components instead.",
+    "Do not route generated images through the backend; serve them as static assets from frontend/public/assets/generated."
   ],
   "nonGoals": [
-    "Removing the Pricing and Checkout pages entirely (they may remain, but must not block template viewing/copying due to subscription checks).",
-    "Adding new third-party authentication or payment providers beyond what already exists."
+    "Implementing third-party Instagram API integration or live follower counts.",
+    "Adding third-party authentication beyond Internet Identity.",
+    "Building an admin UI for managing influencer lists (use a curated/static list for now)."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "Abstract gradient template thumbnail with modern geometric shapes (template-thumb-abstract-01.dim_800x1067.png)",
+      "Minimal beige editorial template thumbnail with clean typography blocks (template-thumb-editorial-01.dim_800x1067.png)",
+      "Bold neon dark template thumbnail with glow accents and grid pattern (template-thumb-neon-01.dim_800x1067.png)",
+      "Warm lifestyle template thumbnail with soft blobs and subtle grain texture (template-thumb-lifestyle-01.dim_800x1067.png)",
+      "Cinematic photo-style template thumbnail with film frame overlay (template-thumb-cinematic-01.dim_800x1067.png)",
+      "Playful pastel template thumbnail with doodles and stickers style (template-thumb-playful-01.dim_800x1067.png)",
+      "Luxury black-and-gold template thumbnail with elegant lines (template-thumb-luxury-01.dim_800x1067.png)",
+      "Tech blueprints template thumbnail with schematic line art (template-thumb-tech-01.dim_800x1067.png)"
+    ],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

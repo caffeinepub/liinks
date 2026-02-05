@@ -2,11 +2,13 @@ import { useParams, useNavigate } from '@tanstack/react-router';
 import { useGetAllTemplates } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Sparkles, Eye, LogIn } from 'lucide-react';
+import { Sparkles, Eye, LogIn, ExternalLink } from 'lucide-react';
 import { Skeleton } from '../components/ui/skeleton';
 import { useEffect } from 'react';
+import { getInfluencersByCategory } from '../data/topInfluencers';
+import { SiInstagram } from 'react-icons/si';
 
 export default function TemplateDetailPage() {
   const { templateId } = useParams({ from: '/templates/$templateId' });
@@ -15,6 +17,7 @@ export default function TemplateDetailPage() {
   const navigate = useNavigate();
 
   const template = templates?.find((t) => t.id === templateId);
+  const influencers = template ? getInfluencersByCategory(template.category) : [];
 
   const isAuthenticated = !!identity;
 
@@ -89,12 +92,12 @@ export default function TemplateDetailPage() {
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
+          <div className="space-y-2 flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-3xl md:text-4xl font-bold">{template.name}</h1>
               <Badge variant="secondary">{template.category}</Badge>
             </div>
-            <p className="text-lg text-muted-foreground">{template.description}</p>
+            <p className="text-lg text-muted-foreground leading-relaxed">{template.description}</p>
           </div>
         </div>
 
@@ -114,11 +117,41 @@ export default function TemplateDetailPage() {
           </div>
         </Card>
 
+        {influencers.length > 0 && (
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <SiInstagram className="h-5 w-5 text-pink-500" />
+                Top Influencers in {template.category}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {influencers.map((influencer, idx) => (
+                  <a
+                    key={idx}
+                    href={`https://instagram.com/${influencer.instagramHandle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{influencer.displayName}</p>
+                      <p className="text-sm text-muted-foreground truncate">@{influencer.instagramHandle}</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                  </a>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50">
           <CardContent className="pt-6 space-y-6">
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold">Ready to use this template?</h2>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground leading-relaxed">
                 {!isAuthenticated
                   ? 'Login to copy and customize this template with your own links, bio, and social handles.'
                   : 'Click below to copy this template and start customizing it with your own content.'}

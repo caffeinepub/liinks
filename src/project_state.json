@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 26,
-  "summary": "Liinks link-in-bio template marketplace on Internet Computer with Motoko backend and React/Vite/Tailwind frontend; includes influencer/category template library and signup with user profile fields. Subscription/paywall gating is to be removed so templates and template content are viewable without requiring a subscription/payment.",
+  "projectStateVersion": 30,
+  "summary": "Subscription-based Liinks platform (link-in-bio template marketplace) on Internet Computer with Motoko backend and React/Vite/Tailwind frontend; includes influencer/category template library, signup with user profile fields, and premium/pro subscription paywall with INR payments (Razorpay + UPI QR upload/receiver details) gating template copying/customization and pro template uploads.",
   "existing_features": [
     {
       "id": "IF-1",
@@ -233,18 +233,34 @@
       "version": 1
     },
     {
-      "id": "feature-make-template-browsing-and-viewing-work-for-all-users-including-guests-and-unregistered-users-so-the-template-gallery-and-template-detail-pages-always-show-template-content",
-      "title": "Make template browsing and viewing work for all users (including guests and unregistered users) so the Template Gallery and Template Detail pages always show template content.",
+      "id": "feature-add-a-curated-hard-coded-dataset-of-top-influencers-with-instagram-handles-grouped-by-template-category-and-surface-it-in-the-template-browsing-experience",
+      "title": "Add a curated, hard-coded dataset of “top influencers” with Instagram handles, grouped by template category, and surface it in the template browsing experience.",
       "reqIds": [
         "REQ-5"
       ],
       "version": 1
     },
     {
-      "id": "feature-remove-subscription-paywall-gating-from-the-template-flow-so-users-are-not-blocked-from-copying-customizing-templates-due-to-subscription-status",
-      "title": "Remove subscription/paywall gating from the template flow so users are not blocked from copying/customizing templates due to subscription status.",
+      "id": "feature-add-richer-default-content-for-each-seeded-template-by-populating-template-editablecontent-with-a-json-payload-encoded-as-bytes-and-update-the-template-editor-to-load-and-apply-this-content-when-available",
+      "title": "Add richer default content for each seeded template by populating template.editableContent with a JSON payload (encoded as bytes) and update the template editor to load and apply this content when available.",
       "reqIds": [
         "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-introduce-various-designs-across-the-template-set-by-adding-multiple-visually-distinct-template-thumbnail-images-and-wiring-seeded-templates-to-use-them-instead-of-reusing-the-same-logo-hero-background-for-most-templates",
+      "title": "Introduce “various designs” across the template set by adding multiple visually distinct template thumbnail images and wiring seeded templates to use them (instead of reusing the same logo/hero background for most templates).",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-template-gallery-and-or-template-detail-ui-to-better-accommodate-and-present-the-new-richer-content-longer-descriptions-and-the-influencer-section-with-consistent-spacing-and-readable-typography",
+      "title": "Update the template gallery and/or template detail UI to better accommodate and present the new richer content (longer descriptions and the influencer section) with consistent spacing and readable typography.",
+      "reqIds": [
+        "REQ-8"
       ],
       "version": 1
     }
@@ -252,24 +268,20 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove subscription/paywall gating so users can view and see template content without a subscription",
+      "summary": "Add a curated list of top influencers and their Instagram handles to the template library (seed/display in UI).",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-4",
-      "summary": "Remove subscription enforcement from backend operations involved in customizing templates so saving a bio page does not require an active subscription.",
-      "reqIds": [
-        "REQ-7"
-      ],
+      "id": "AR-2",
+      "summary": "Add richer content/copy for each template (descriptions and example content populated across templates).",
+      "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-5",
-      "summary": "Make template listing endpoints publicly accessible (no registration/role requirement) so template content can be fetched from the backend without requiring a registered user permission.",
-      "reqIds": [
-        "REQ-8"
-      ],
+      "id": "AR-3",
+      "summary": "Create and include multiple design variations for templates (diverse designs/styles across the template set).",
+      "reqIds": [],
       "status": "pending"
     }
   ],
@@ -285,28 +297,57 @@
     "Refreshed/expanded ICP React build-template workspace and tooling (component:core-infrastructure v1.0.2; build-template-react v1.0.0; shadcn-ui v1.0.0).",
     "Project includes GitHub export tooling/integration for ICP CLI workflows (component:github-export-icp-cli v1.0.0)."
   ],
-  "known_issues": [
-    "Users currently cannot view/see any template content (template gallery/detail appears blocked/empty), likely due to subscription gating or access checks."
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Abstract gradient template thumbnail with modern geometric shapes (template-thumb-abstract-01.dim_800x1067.png)\n- Minimal beige editorial template thumbnail with clean typography blocks (template-thumb-editorial-01.dim_800x1067.png)\n- Bold neon dark template thumbnail with glow accents and grid pattern (template-thumb-neon-01.dim_800x1067.png)\n- Warm lifestyle template thumbnail with soft blobs and subtle grain texture (template-thumb-lifestyle-01.dim_800x1067.png)\n- Cinematic photo-style template thumbnail with film frame overlay (template-thumb-cinematic-01.dim_800x1067.png)\n- Playful pastel template thumbnail with doodles and stickers style (template-thumb-playful-01.dim_800x1067.png)\n- Luxury black-and-gold template thumbnail with elegant lines (template-thumb-luxury-01.dim_800x1067.png)\n- Tech blueprints template thumbnail with schematic line art (template-thumb-tech-01.dim_800x1067.png)",
   "generatedImages": [
     {
-      "filename": "frontend/public/assets/generated/liinks-hero-bg.dim_1920x1080.png",
-      "description": "Generated hero background image asset for the landing/brand UI.",
-      "targetWidth": 1920,
-      "targetHeight": 1080
-    },
-    {
-      "filename": "frontend/public/assets/generated/liinks-logo.dim_512x512.png",
-      "description": "Generated logo image asset for branding.",
-      "targetWidth": 512,
-      "targetHeight": 512
-    },
-    {
-      "filename": "frontend/public/assets/generated/qr-placeholder-frame.dim_800x800.png",
-      "description": "Generated placeholder frame image for QR/payment uploader UI.",
+      "filename": "template-thumb-abstract-01.dim_800x1067.png",
+      "description": "Abstract gradient template thumbnail with modern geometric shapes",
       "targetWidth": 800,
-      "targetHeight": 800
+      "targetHeight": 1067
+    },
+    {
+      "filename": "template-thumb-editorial-01.dim_800x1067.png",
+      "description": "Minimal beige editorial template thumbnail with clean typography blocks",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "template-thumb-neon-01.dim_800x1067.png",
+      "description": "Bold neon dark template thumbnail with glow accents and grid pattern",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "template-thumb-lifestyle-01.dim_800x1067.png",
+      "description": "Warm lifestyle template thumbnail with soft blobs and subtle grain texture",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "template-thumb-cinematic-01.dim_800x1067.png",
+      "description": "Cinematic photo-style template thumbnail with film frame overlay",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "template-thumb-playful-01.dim_800x1067.png",
+      "description": "Playful pastel template thumbnail with doodles and stickers style",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "template-thumb-luxury-01.dim_800x1067.png",
+      "description": "Luxury black-and-gold template thumbnail with elegant lines",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "template-thumb-tech-01.dim_800x1067.png",
+      "description": "Tech blueprints template thumbnail with schematic line art",
+      "targetWidth": 800,
+      "targetHeight": 1067
     }
   ],
   "gameProjectType": "none",

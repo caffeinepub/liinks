@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-make-template-browsing-and-viewing-work-for-all-users-including-guests-and-unregistered-users-so-the-template-gallery-and-template-detail-pages-always-show-template-content",
-      "featureTitle": "Make template browsing and viewing work for all users (including guests and unregistered users) so the Template Gallery and Template Detail pages always show template content.",
+      "featureId": "feature-add-a-curated-hard-coded-dataset-of-top-influencers-with-instagram-handles-grouped-by-template-category-and-surface-it-in-the-template-browsing-experience",
+      "featureTitle": "Add a curated, hard-coded dataset of “top influencers” with Instagram handles, grouped by template category, and surface it in the template browsing experience.",
       "files": [
-        "frontend/src/pages/TemplateDetailPage.tsx",
-        "frontend/src/pages/TemplateGalleryPage.tsx"
+        "frontend/src/data/topInfluencers.ts",
+        "frontend/src/pages/TemplateDetailPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -23,14 +23,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-remove-subscription-paywall-gating-from-the-template-flow-so-users-are-not-blocked-from-copying-customizing-templates-due-to-subscription-status",
-      "featureTitle": "Remove subscription/paywall gating from the template flow so users are not blocked from copying/customizing templates due to subscription status.",
+      "featureId": "feature-add-richer-default-content-for-each-seeded-template-by-populating-template-editablecontent-with-a-json-payload-encoded-as-bytes-and-update-the-template-editor-to-load-and-apply-this-content-when-available",
+      "featureTitle": "Add richer default content for each seeded template by populating template.editableContent with a JSON payload (encoded as bytes) and update the template editor to load and apply this content when available.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/pages/TemplateDetailPage.tsx",
-        "frontend/src/pages/TemplateEditorPage.tsx",
-        "frontend/src/pages/TemplateGalleryPage.tsx"
+        "frontend/src/data/seedTemplates.ts",
+        "frontend/src/pages/TemplateEditorPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,6 +40,48 @@
       ],
       "testIds": [
         "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-introduce-various-designs-across-the-template-set-by-adding-multiple-visually-distinct-template-thumbnail-images-and-wiring-seeded-templates-to-use-them-instead-of-reusing-the-same-logo-hero-background-for-most-templates",
+      "featureTitle": "Introduce “various designs” across the template set by adding multiple visually distinct template thumbnail images and wiring seeded templates to use them (instead of reusing the same logo/hero background for most templates).",
+      "files": [
+        "frontend/src/data/seedTemplates.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-template-gallery-and-or-template-detail-ui-to-better-accommodate-and-present-the-new-richer-content-longer-descriptions-and-the-influencer-section-with-consistent-spacing-and-readable-typography",
+      "featureTitle": "Update the template gallery and/or template detail UI to better accommodate and present the new richer content (longer descriptions and the influencer section) with consistent spacing and readable typography.",
+      "files": [
+        "frontend/src/components/TemplateCard.tsx",
+        "frontend/src/pages/TemplateDetailPage.tsx",
+        "frontend/src/pages/TemplateGalleryPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
       ],
       "confidence": "high"
     }

@@ -14,6 +14,13 @@ import SocialHandlesEditor from '../components/SocialHandlesEditor';
 import { Copy, ExternalLink, Check } from 'lucide-react';
 import type { Link, SocialHandle } from '../backend';
 
+interface EditableContent {
+  title?: string;
+  bioText?: string;
+  socialHandles?: SocialHandle[];
+  links?: Link[];
+}
+
 export default function TemplateEditorPage() {
   const { templateId } = useParams({ from: '/editor/$templateId' });
   const { data: templates } = useGetAllTemplates();
@@ -33,8 +40,33 @@ export default function TemplateEditorPage() {
 
   useEffect(() => {
     if (template) {
-      setTitle(template.name);
-      setBioText(template.description);
+      // Try to parse editableContent if present
+      if (template.editableContent && template.editableContent.length > 0) {
+        try {
+          const decoder = new TextDecoder();
+          const jsonString = decoder.decode(template.editableContent);
+          const content: EditableContent = JSON.parse(jsonString);
+          
+          // Initialize state from editableContent
+          if (content.title) setTitle(content.title);
+          if (content.bioText) setBioText(content.bioText);
+          if (content.socialHandles && Array.isArray(content.socialHandles)) {
+            setSocialHandles(content.socialHandles);
+          }
+          if (content.links && Array.isArray(content.links)) {
+            setLinks(content.links);
+          }
+        } catch (error) {
+          // Fallback to template name/description if JSON parsing fails
+          console.warn('Failed to parse editableContent, using fallback:', error);
+          setTitle(template.name);
+          setBioText(template.description);
+        }
+      } else {
+        // Fallback when editableContent is empty
+        setTitle(template.name);
+        setBioText(template.description);
+      }
     }
   }, [template]);
 
