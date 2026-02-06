@@ -78,6 +78,7 @@ export enum UserRole {
 }
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    confirmSubscription(): Promise<void>;
     createBioPage(templateId: TemplateId, title: string, bioText: string, socialHandles: Array<SocialHandle>, links: Array<Link>): Promise<void>;
     getAllTemplates(): Promise<Array<Template>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -87,11 +88,11 @@ export interface backendInterface {
     getTemplatesByCategory(category: Category): Promise<Array<Template>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     hasActiveSubscription(): Promise<boolean>;
+    initiateSubscription(tier: SubscriptionTier, duration: Time, paymentReference: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     isRegistered(): Promise<boolean>;
     registerProfile(firstName: string, lastName: string, email: string, phoneNumber: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveFamousInfluencer(category: Category, profile: UserProfile): Promise<void>;
-    subscribe(tier: SubscriptionTier, duration: Time): Promise<void>;
     uploadTemplate(name: string, category: Category, description: string, thumbnail: ExternalBlob, editableContent: Uint8Array): Promise<TemplateId>;
 }

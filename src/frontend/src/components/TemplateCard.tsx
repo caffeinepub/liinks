@@ -3,23 +3,31 @@ import type { Template } from '../backend';
 import { Card, CardContent, CardFooter } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, Sparkles } from 'lucide-react';
+import TemplateBadge from './TemplateBadge';
 
 interface TemplateCardProps {
   template: Template;
+  badge?: 'creator-favorite' | 'trending' | 'most-used';
 }
 
-export default function TemplateCard({ template }: TemplateCardProps) {
+export default function TemplateCard({ template, badge }: TemplateCardProps) {
   const navigate = useNavigate();
 
   return (
-    <Card className="group overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 flex flex-col h-full">
-      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-        <img
-          src={template.thumbnail.getDirectURL()}
-          alt={template.name}
-          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-        />
+    <Card className="group overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 flex flex-col h-full transform hover:-translate-y-1">
+      <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-muted/50 to-muted flex items-center justify-center">
+        <div className="text-center space-y-3 p-6">
+          <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+            <Sparkles className="h-8 w-8 text-primary" />
+          </div>
+          <p className="text-sm text-muted-foreground font-medium">Fully Customizable</p>
+        </div>
+        {badge && (
+          <div className="absolute top-3 right-3">
+            <TemplateBadge variant={badge} />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
       
@@ -38,7 +46,7 @@ export default function TemplateCard({ template }: TemplateCardProps) {
       <CardFooter className="pt-0">
         <Button
           onClick={() => navigate({ to: '/templates/$templateId', params: { templateId: template.id } })}
-          className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
+          className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200"
           variant="outline"
         >
           <Eye className="h-4 w-4 mr-2" />

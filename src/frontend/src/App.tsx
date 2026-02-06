@@ -13,6 +13,7 @@ import SharedBioPage from './pages/SharedBioPage';
 import BrandHeader from './components/BrandHeader';
 import { Toaster } from './components/ui/sonner';
 import { ThemeProvider } from 'next-themes';
+import { Heart } from 'lucide-react';
 
 function AppLayout() {
   return (
@@ -23,10 +24,7 @@ function AppLayout() {
       </main>
       <footer className="border-t border-border/40 bg-card/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          © 2026. Built with <span className="text-primary">♥</span> using{' '}
-          <a href="https://caffeine.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-            caffeine.ai
-          </a>
+          Built with <Heart className="inline h-4 w-4 text-primary fill-primary mx-1" /> for creators who want more than just links.
         </div>
       </footer>
     </div>

@@ -1,7 +1,73 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 30,
+  "projectStateVersion": 45,
   "summary": "Subscription-based Liinks platform (link-in-bio template marketplace) on Internet Computer with Motoko backend and React/Vite/Tailwind frontend; includes influencer/category template library, signup with user profile fields, and premium/pro subscription paywall with INR payments (Razorpay + UPI QR upload/receiver details) gating template copying/customization and pro template uploads.",
+  "architectural_notes": [
+    "Backend is implemented in Motoko and composes reusable modules for authorization (access control) and blob storage.",
+    "Frontend is a React + Vite app using TailwindCSS and shadcn/ui component library.",
+    "Authentication integrates Internet Identity via frontend hooks and actor creation utilities.",
+    "Project includes an ICP deployment/build template with canister configuration, scripts, and workspace tooling.",
+    "Payments must support Indian Rupees pricing tiers (₹199 Premium, ₹499 Pro) and integrate Razorpay; include UPI receiver ID and QR upload UI for payments.",
+    "Frontend introduces consolidated query/hooks layer to fetch subscription/payment configuration and keep subscription state in sync post-checkout.",
+    "Backend exposes/configures receiver payment details (e.g., UPI ID) for consumption by Checkout UI.",
+    "Upgraded Motoko authorization and blob-storage components to v4.0.0 (component refresh across backend modules).",
+    "Refreshed/expanded ICP React build-template workspace and tooling (component:core-infrastructure v1.0.2; build-template-react v1.0.0; shadcn-ui v1.0.0).",
+    "Project includes GitHub export tooling/integration for ICP CLI workflows (component:github-export-icp-cli v1.0.0)."
+  ],
+  "known_issues": [
+    "Payments/checkout currently not working for subscription purchase (user reports paying is not working)."
+  ],
+  "isFixRequest": true,
+  "generatedImages": [
+    {
+      "filename": "frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png",
+      "description": "Generated template thumbnail asset (abstract style) for template gallery/cards.",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png",
+      "description": "Generated template thumbnail asset (cinematic style) for template gallery/cards.",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png",
+      "description": "Generated template thumbnail asset (editorial style) for template gallery/cards.",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png",
+      "description": "Generated template thumbnail asset (lifestyle style) for template gallery/cards.",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png",
+      "description": "Generated template thumbnail asset (luxury style) for template gallery/cards.",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png",
+      "description": "Generated template thumbnail asset (neon style) for template gallery/cards.",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png",
+      "description": "Generated template thumbnail asset (playful style) for template gallery/cards.",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    },
+    {
+      "filename": "frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png",
+      "description": "Generated template thumbnail asset (tech style) for template gallery/cards.",
+      "targetWidth": 800,
+      "targetHeight": 1067
+    }
+  ],
   "existing_features": [
     {
       "id": "IF-1",
@@ -233,32 +299,24 @@
       "version": 1
     },
     {
-      "id": "feature-add-a-curated-hard-coded-dataset-of-top-influencers-with-instagram-handles-grouped-by-template-category-and-surface-it-in-the-template-browsing-experience",
-      "title": "Add a curated, hard-coded dataset of “top influencers” with Instagram handles, grouped by template category, and surface it in the template browsing experience.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-richer-default-content-for-each-seeded-template-by-populating-template-editablecontent-with-a-json-payload-encoded-as-bytes-and-update-the-template-editor-to-load-and-apply-this-content-when-available",
-      "title": "Add richer default content for each seeded template by populating template.editableContent with a JSON payload (encoded as bytes) and update the template editor to load and apply this content when available.",
+      "id": "feature-add-explicit-payment-method-options-in-the-checkout-ui-for-inr-subscriptions-razorpay-google-pay-gpay-and-phonepe-the-page-must-present-these-as-clear-selectable-options-and-guide-the-user-through-completing-payment-for-the-selected-tier-amount",
+      "title": "Add explicit payment method options in the Checkout UI for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe. The page must present these as clear selectable options and guide the user through completing payment for the selected tier amount.",
       "reqIds": [
         "REQ-6"
       ],
       "version": 1
     },
     {
-      "id": "feature-introduce-various-designs-across-the-template-set-by-adding-multiple-visually-distinct-template-thumbnail-images-and-wiring-seeded-templates-to-use-them-instead-of-reusing-the-same-logo-hero-background-for-most-templates",
-      "title": "Introduce “various designs” across the template set by adding multiple visually distinct template thumbnail images and wiring seeded templates to use them (instead of reusing the same logo/hero background for most templates).",
+      "id": "feature-implement-upi-intent-deep-link-support-for-google-pay-gpay-and-phonepe-on-the-checkout-page-using-the-configured-receiver-upi-id-and-the-correct-plan-amount-so-that-tapping-the-button-opens-the-corresponding-upi-app-when-available-and-gracefully-falls-back-to-copy-to-clipboard-if-not",
+      "title": "Implement UPI intent/deep-link support for Google Pay (GPay) and PhonePe on the Checkout page using the configured receiver UPI ID and the correct plan amount, so that tapping the button opens the corresponding UPI app when available (and gracefully falls back to copy-to-clipboard if not).",
       "reqIds": [
         "REQ-7"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-template-gallery-and-or-template-detail-ui-to-better-accommodate-and-present-the-new-richer-content-longer-descriptions-and-the-influencer-section-with-consistent-spacing-and-readable-typography",
-      "title": "Update the template gallery and/or template detail UI to better accommodate and present the new richer content (longer descriptions and the influencer section) with consistent spacing and readable typography.",
+      "id": "feature-capture-the-user-s-payment-reference-transaction-id-during-confirmation-and-persist-it-in-the-backend-as-part-of-the-subscription-activation-record-so-support-can-audit-what-the-user-entered-update-the-api-surface-as-needed-and-keep-the-frontend-confirmation-form-wired-to-the-backend-call",
+      "title": "Capture the user’s payment reference / transaction ID during confirmation and persist it in the backend as part of the subscription activation record (so support can audit what the user entered). Update the API surface as needed and keep the frontend confirmation form wired to the backend call.",
       "reqIds": [
         "REQ-8"
       ],
@@ -268,86 +326,17 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add a curated list of top influencers and their Instagram handles to the template library (seed/display in UI).",
+      "summary": "Add/enable payment methods: Razorpay plus UPI apps support (GPay and PhonePe) for INR subscription checkout",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Add richer content/copy for each template (descriptions and example content populated across templates).",
-      "reqIds": [],
+      "summary": "Fix the subscription purchase flow so payment confirmation reliably activates Premium/Pro for registered users (resolve the current “paying is not working” issue). Ensure the backend authorization state allows a newly registered user to call subscription APIs without trapping as unauthorized.",
+      "reqIds": [
+        "REQ-5"
+      ],
       "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Create and include multiple design variations for templates (diverse designs/styles across the template set).",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
-  "architectural_notes": [
-    "Backend is implemented in Motoko and composes reusable modules for authorization (access control) and blob storage.",
-    "Frontend is a React + Vite app using TailwindCSS and shadcn/ui component library.",
-    "Authentication integrates Internet Identity via frontend hooks and actor creation utilities.",
-    "Project includes an ICP deployment/build template with canister configuration, scripts, and workspace tooling.",
-    "Payments must support Indian Rupees pricing tiers (₹199 Premium, ₹499 Pro) and integrate Razorpay; include UPI receiver ID and QR upload UI for payments.",
-    "Frontend introduces consolidated query/hooks layer to fetch subscription/payment configuration and keep subscription state in sync post-checkout.",
-    "Backend exposes/configures receiver payment details (e.g., UPI ID) for consumption by Checkout UI.",
-    "Upgraded Motoko authorization and blob-storage components to v4.0.0 (component refresh across backend modules).",
-    "Refreshed/expanded ICP React build-template workspace and tooling (component:core-infrastructure v1.0.2; build-template-react v1.0.0; shadcn-ui v1.0.0).",
-    "Project includes GitHub export tooling/integration for ICP CLI workflows (component:github-export-icp-cli v1.0.0)."
-  ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Abstract gradient template thumbnail with modern geometric shapes (template-thumb-abstract-01.dim_800x1067.png)\n- Minimal beige editorial template thumbnail with clean typography blocks (template-thumb-editorial-01.dim_800x1067.png)\n- Bold neon dark template thumbnail with glow accents and grid pattern (template-thumb-neon-01.dim_800x1067.png)\n- Warm lifestyle template thumbnail with soft blobs and subtle grain texture (template-thumb-lifestyle-01.dim_800x1067.png)\n- Cinematic photo-style template thumbnail with film frame overlay (template-thumb-cinematic-01.dim_800x1067.png)\n- Playful pastel template thumbnail with doodles and stickers style (template-thumb-playful-01.dim_800x1067.png)\n- Luxury black-and-gold template thumbnail with elegant lines (template-thumb-luxury-01.dim_800x1067.png)\n- Tech blueprints template thumbnail with schematic line art (template-thumb-tech-01.dim_800x1067.png)",
-  "generatedImages": [
-    {
-      "filename": "template-thumb-abstract-01.dim_800x1067.png",
-      "description": "Abstract gradient template thumbnail with modern geometric shapes",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "template-thumb-editorial-01.dim_800x1067.png",
-      "description": "Minimal beige editorial template thumbnail with clean typography blocks",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "template-thumb-neon-01.dim_800x1067.png",
-      "description": "Bold neon dark template thumbnail with glow accents and grid pattern",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "template-thumb-lifestyle-01.dim_800x1067.png",
-      "description": "Warm lifestyle template thumbnail with soft blobs and subtle grain texture",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "template-thumb-cinematic-01.dim_800x1067.png",
-      "description": "Cinematic photo-style template thumbnail with film frame overlay",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "template-thumb-playful-01.dim_800x1067.png",
-      "description": "Playful pastel template thumbnail with doodles and stickers style",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "template-thumb-luxury-01.dim_800x1067.png",
-      "description": "Luxury black-and-gold template thumbnail with elegant lines",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "template-thumb-tech-01.dim_800x1067.png",
-      "description": "Tech blueprints template thumbnail with schematic line art",
-      "targetWidth": 800,
-      "targetHeight": 1067
     }
   ],
   "gameProjectType": "none",

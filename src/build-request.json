@@ -1,113 +1,94 @@
 {
   "kind": "build_request",
-  "title": "Add top influencer Instagram handles and richer, varied template content/designs",
-  "priority": "normal",
+  "title": "Fix checkout payments and add Razorpay, GPay, and PhonePe options",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-5",
-      "text": "Add a curated, hard-coded dataset of “top influencers” with Instagram handles, grouped by template category, and surface it in the template browsing experience.",
-      "target": "frontend",
+      "text": "Fix the subscription purchase flow so payment confirmation reliably activates Premium/Pro for registered users (resolve the current “paying is not working” issue). Ensure the backend authorization state allows a newly registered user to call subscription APIs without trapping as unauthorized.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-3"
+          "recent-messages"
         ],
         "quotes": [
-          "I need you to add top influencers  instagram  handle"
+          "paying is not working  ...add the razor pay and gpay and phonepay"
         ]
       },
       "acceptanceCriteria": [
-        "A new frontend data module exists (e.g., in frontend/src/data/...) containing a curated list of top influencers with at least: display name, instagramHandle, category.",
-        "TemplateDetailPage shows a “Top influencers in <category>” section for the viewed template’s category, listing influencer names and their @handles.",
-        "Instagram handles are rendered as clickable links to https://instagram.com/<handle> (opening in a new tab with noopener/noreferrer).",
-        "If no influencers exist for a category, the UI hides the section (no empty state block)."
+        "After a user completes Signup, calling backend subscribe(...) does not trap with an authorization error.",
+        "If a user is not registered, subscribe(...) returns a clear error (trap message) indicating registration is required.",
+        "Manual QA: signup → checkout → confirm payment results in hasActiveSubscription() returning true and UI gating unlocking Premium/Pro as expected."
       ]
     },
     {
       "id": "REQ-6",
-      "text": "Add richer default content for each seeded template by populating template.editableContent with a JSON payload (encoded as bytes) and update the template editor to load and apply this content when available.",
+      "text": "Add explicit payment method options in the Checkout UI for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe. The page must present these as clear selectable options and guide the user through completing payment for the selected tier amount.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-3"
+          "recent-messages"
         ],
         "quotes": [
-          "and add content for each template"
+          "add the razor pay and gpay and phonepay"
         ]
       },
       "acceptanceCriteria": [
-        "Seed templates in frontend/src/data/seedTemplates.ts include non-empty editableContent for each template, encoding JSON that can provide defaults for: title, bioText, socialHandles[], links[].",
-        "TemplateEditorPage parses template.editableContent when present and uses it to initialize the editor state (title, bioText, socialHandles, links) instead of only using template.name/description.",
-        "If editableContent is missing/empty/invalid JSON, TemplateEditorPage falls back to current behavior (title=template.name, bioText=template.description, empty links/handles) without crashing.",
-        "At least one seeded template demonstrates multiple default links and at least one default social handle being pre-filled in the editor."
+        "Checkout page shows payment method choices that include: Razorpay, Google Pay (GPay), and PhonePe.",
+        "Selecting a method updates the instructions/CTA shown to the user for that method.",
+        "All user-facing copy is in English."
       ]
     },
     {
       "id": "REQ-7",
-      "text": "Introduce “various designs” across the template set by adding multiple visually distinct template thumbnail images and wiring seeded templates to use them (instead of reusing the same logo/hero background for most templates).",
+      "text": "Implement UPI intent/deep-link support for Google Pay (GPay) and PhonePe on the Checkout page using the configured receiver UPI ID and the correct plan amount, so that tapping the button opens the corresponding UPI app when available (and gracefully falls back to copy-to-clipboard if not).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-3"
+          "recent-messages"
         ],
         "quotes": [
-          "and design  it  through various designs"
+          "add the razor pay and gpay and phonepay"
         ]
       },
       "acceptanceCriteria": [
-        "New thumbnail images are added under frontend/public/assets/generated and referenced from seed templates via ExternalBlob.fromURL(...).",
-        "Seed templates across multiple categories use different thumbnails (not all pointing to liinks-logo or liinks-hero-bg).",
-        "Template gallery cards and template detail preview correctly render the new thumbnails without layout regressions."
+        "For both Premium (₹199) and Pro (₹499), the Checkout page can generate a UPI payment intent link that includes payee VPA (UPI ID) and amount.",
+        "Buttons for Google Pay and PhonePe attempt to open the respective app via intent/deep-link; if opening fails, the UI provides a copy-to-clipboard fallback (UPI ID and/or UPI link).",
+        "The existing “UPI ID copied to clipboard” behavior continues to work."
       ]
     },
     {
       "id": "REQ-8",
-      "text": "Update the template gallery and/or template detail UI to better accommodate and present the new richer content (longer descriptions and the influencer section) with consistent spacing and readable typography.",
-      "target": "frontend",
+      "text": "Capture the user’s payment reference / transaction ID during confirmation and persist it in the backend as part of the subscription activation record (so support can audit what the user entered). Update the API surface as needed and keep the frontend confirmation form wired to the backend call.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "recent-messages-3"
+          "recent-messages"
         ],
         "quotes": [
-          "add content for each template"
+          "paying is not working  ...add the razor pay and gpay and phonepay"
         ]
       },
       "acceptanceCriteria": [
-        "TemplateCard and TemplateDetailPage continue to look balanced with longer template descriptions (no overflow outside cards; text remains clamped or wrapped appropriately).",
-        "The influencer section visually matches the existing shadcn/Tailwind styling (uses existing UI components where appropriate) and remains readable in light/dark mode."
+        "Checkout confirmation cannot proceed without a non-empty payment reference / transaction ID (existing validation preserved).",
+        "Backend stores the submitted payment reference alongside the user’s subscription activation (data retrievable for admins/devs via a backend query or by extending an existing user profile return shape).",
+        "If backend state/schema changes are required, a conditional backend migration is added so existing deployments upgrade safely without losing userProfiles."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit files in frontend/src/components/ui or other frontend immutable paths listed in SYSTEM_CONTEXT; compose existing UI components instead.",
-    "Do not route generated images through the backend; serve them as static assets from frontend/public/assets/generated."
+    "Backend must remain a single Motoko actor in backend/main.mo; add backend/migration.mo only if state schema changes.",
+    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "No third-party authentication beyond Internet Identity.",
+    "No external databases or non-Motoko backend services."
   ],
   "nonGoals": [
-    "Implementing third-party Instagram API integration or live follower counts.",
-    "Adding third-party authentication beyond Internet Identity.",
-    "Building an admin UI for managing influencer lists (use a curated/static list for now)."
+    "Implementing real-time payment verification with Razorpay webhooks or external servers.",
+    "Adding non-INR payment rails (cards, PayPal, crypto wallets).",
+    "Building a full transaction ledger UI for users (beyond storing the reference and activating subscription)."
   ],
   "imageRequirements": {
-    "required": [
-      "Abstract gradient template thumbnail with modern geometric shapes (template-thumb-abstract-01.dim_800x1067.png)",
-      "Minimal beige editorial template thumbnail with clean typography blocks (template-thumb-editorial-01.dim_800x1067.png)",
-      "Bold neon dark template thumbnail with glow accents and grid pattern (template-thumb-neon-01.dim_800x1067.png)",
-      "Warm lifestyle template thumbnail with soft blobs and subtle grain texture (template-thumb-lifestyle-01.dim_800x1067.png)",
-      "Cinematic photo-style template thumbnail with film frame overlay (template-thumb-cinematic-01.dim_800x1067.png)",
-      "Playful pastel template thumbnail with doodles and stickers style (template-thumb-playful-01.dim_800x1067.png)",
-      "Luxury black-and-gold template thumbnail with elegant lines (template-thumb-luxury-01.dim_800x1067.png)",
-      "Tech blueprints template thumbnail with schematic line art (template-thumb-tech-01.dim_800x1067.png)"
-    ],
+    "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

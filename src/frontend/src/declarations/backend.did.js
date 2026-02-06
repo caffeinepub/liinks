@@ -112,6 +112,7 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'confirmSubscription' : IDL.Func([], [], []),
   'createBioPage' : IDL.Func(
       [TemplateId, IDL.Text, IDL.Text, IDL.Vec(SocialHandle), IDL.Vec(Link)],
       [],
@@ -137,6 +138,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'hasActiveSubscription' : IDL.Func([], [IDL.Bool], ['query']),
+  'initiateSubscription' : IDL.Func([SubscriptionTier, Time, IDL.Text], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isRegistered' : IDL.Func([], [IDL.Bool], ['query']),
   'registerProfile' : IDL.Func(
@@ -146,7 +148,6 @@ export const idlService = IDL.Service({
     ),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'saveFamousInfluencer' : IDL.Func([Category, UserProfile], [], []),
-  'subscribe' : IDL.Func([SubscriptionTier, Time], [], []),
   'uploadTemplate' : IDL.Func(
       [IDL.Text, Category, IDL.Text, ExternalBlob, IDL.Vec(IDL.Nat8)],
       [TemplateId],
@@ -261,6 +262,7 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'confirmSubscription' : IDL.Func([], [], []),
     'createBioPage' : IDL.Func(
         [TemplateId, IDL.Text, IDL.Text, IDL.Vec(SocialHandle), IDL.Vec(Link)],
         [],
@@ -286,6 +288,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'hasActiveSubscription' : IDL.Func([], [IDL.Bool], ['query']),
+    'initiateSubscription' : IDL.Func(
+        [SubscriptionTier, Time, IDL.Text],
+        [],
+        [],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isRegistered' : IDL.Func([], [IDL.Bool], ['query']),
     'registerProfile' : IDL.Func(
@@ -295,7 +302,6 @@ export const idlFactory = ({ IDL }) => {
       ),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'saveFamousInfluencer' : IDL.Func([Category, UserProfile], [], []),
-    'subscribe' : IDL.Func([SubscriptionTier, Time], [], []),
     'uploadTemplate' : IDL.Func(
         [IDL.Text, Category, IDL.Text, ExternalBlob, IDL.Vec(IDL.Nat8)],
         [TemplateId],

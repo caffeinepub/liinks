@@ -1,130 +1,63 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Top influencers dataset, richer seeded template content, and varied template thumbnail designs",
+  "title": "Checkout UI payment options + UPI intents and payment reference wiring",
   "requirements": [
     {
-      "id": "REQ-5",
-      "summary": "Add a curated hard-coded “top influencers” dataset (with Instagram handles) grouped by template category and show it on template detail.",
-      "acceptanceCriteria": [
-        "A new frontend data module exists (e.g., in frontend/src/data/...) containing a curated list of top influencers with at least: display name, instagramHandle, category.",
-        "TemplateDetailPage shows a “Top influencers in <category>” section for the viewed template’s category, listing influencer names and their @handles.",
-        "Instagram handles are rendered as clickable links to https://instagram.com/<handle> (opening in a new tab with noopener/noreferrer).",
-        "If no influencers exist for a category, the UI hides the section (no empty state block)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/data/topInfluencers.ts",
-          "operation": "create",
-          "description": "Create a curated, hard-coded influencers dataset exported from a dedicated data module; include at least displayName, instagramHandle, and category, and provide helper utilities (e.g., lookup by category) for use in the template browsing/detail UI."
-        },
-        {
-          "path": "frontend/src/pages/TemplateDetailPage.tsx",
-          "operation": "modify",
-          "description": "Import the curated influencers dataset and render a “Top influencers in <category>” section for the current template’s category; list influencer display names and clickable Instagram @handle links pointing to https://instagram.com/<handle> and opening in a new tab with noopener/noreferrer; hide the entire section when the category has no influencers. Use existing shadcn/Tailwind components for layout and typography (do not edit components/ui)."
-        }
-      ]
-    },
-    {
       "id": "REQ-6",
-      "summary": "Seed richer default template content via editableContent (JSON encoded to bytes) and load/apply it in the template editor with robust fallback behavior.",
+      "summary": "Add Razorpay, Google Pay (GPay), and PhonePe as explicit selectable payment methods in the Checkout UI for INR tiers, updating instructions/CTA based on selection.",
       "acceptanceCriteria": [
-        "Seed templates in frontend/src/data/seedTemplates.ts include non-empty editableContent for each template, encoding JSON that can provide defaults for: title, bioText, socialHandles[], links[].",
-        "TemplateEditorPage parses template.editableContent when present and uses it to initialize the editor state (title, bioText, socialHandles, links) instead of only using template.name/description.",
-        "If editableContent is missing/empty/invalid JSON, TemplateEditorPage falls back to current behavior (title=template.name, bioText=template.description, empty links/handles) without crashing.",
-        "At least one seeded template demonstrates multiple default links and at least one default social handle being pre-filled in the editor."
+        "Checkout page shows payment method choices that include: Razorpay, Google Pay (GPay), and PhonePe.",
+        "Selecting a method updates the instructions/CTA shown to the user for that method.",
+        "All user-facing copy is in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/data/seedTemplates.ts",
+          "path": "frontend/src/pages/CheckoutPage.tsx",
           "operation": "modify",
-          "description": "Update every seeded template to include a non-empty editableContent Uint8Array containing a JSON payload (encode with TextEncoder) that can provide defaults for title, bioText, socialHandles[], and links[]. Ensure at least one template includes multiple default links and at least one default social handle in its JSON defaults. Also adjust any seed data helpers as needed to keep the file maintainable."
-        },
-        {
-          "path": "frontend/src/pages/TemplateEditorPage.tsx",
-          "operation": "modify",
-          "description": "Add logic to decode template.editableContent (TextDecoder), parse JSON safely, validate expected fields, and initialize editor state (title, bioText, socialHandles, links) from it when present. If editableContent is missing/empty/invalid, fall back to the current initialization behavior without crashing."
+          "description": "Add a payment method selector UI (Razorpay, Google Pay, PhonePe) and conditionally render method-specific instructions/primary CTA for the selected tier amount. Keep all copy in English, and keep existing QR upload + confirmation section intact."
         }
       ]
     },
     {
       "id": "REQ-7",
-      "summary": "Introduce various designs by adding multiple distinct generated thumbnail images and wiring seeded templates to use them via ExternalBlob.fromURL.",
+      "summary": "Implement UPI intent/deep-link flows for GPay and PhonePe with a graceful fallback to copy-to-clipboard, preserving existing UPI ID copy behavior.",
       "acceptanceCriteria": [
-        "New thumbnail images are added under frontend/public/assets/generated and referenced from seed templates via ExternalBlob.fromURL(...).",
-        "Seed templates across multiple categories use different thumbnails (not all pointing to liinks-logo or liinks-hero-bg).",
-        "Template gallery cards and template detail preview correctly render the new thumbnails without layout regressions."
+        "For both Premium (₹199) and Pro (₹499), the Checkout page can generate a UPI payment intent link that includes payee VPA (UPI ID) and amount.",
+        "Buttons for Google Pay and PhonePe attempt to open the respective app via intent/deep-link; if opening fails, the UI provides a copy-to-clipboard fallback (UPI ID and/or UPI link).",
+        "The existing “UPI ID copied to clipboard” behavior continues to work."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png",
+          "path": "frontend/src/utils/upi.ts",
           "operation": "create",
-          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
+          "description": "Create a small UPI utility module to build a standard UPI payment link (including payee VPA and amount) and helper(s) to attempt app-open for Google Pay and PhonePe with a timeout-based fallback signal for the UI to show copy-to-clipboard options."
         },
         {
-          "path": "frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png",
-          "operation": "create",
-          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
-        },
-        {
-          "path": "frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png",
-          "operation": "create",
-          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
-        },
-        {
-          "path": "frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png",
-          "operation": "create",
-          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
-        },
-        {
-          "path": "frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png",
-          "operation": "create",
-          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
-        },
-        {
-          "path": "frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png",
-          "operation": "create",
-          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
-        },
-        {
-          "path": "frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png",
-          "operation": "create",
-          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
-        },
-        {
-          "path": "frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png",
-          "operation": "create",
-          "description": "Add the generated thumbnail asset at frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png and ensure it is served as a static file (no backend routing)."
-        },
-        {
-          "path": "frontend/src/data/seedTemplates.ts",
+          "path": "frontend/src/pages/CheckoutPage.tsx",
           "operation": "modify",
-          "description": "Update seeded templates across multiple categories to reference the new generated thumbnail images via ExternalBlob.fromURL(...) (e.g., /assets/generated/template-thumb-abstract-01.dim_800x1067.png, etc.) so the gallery/detail no longer reuses liinks-logo/liinks-hero-bg for most templates. Use the blob-storage ExternalBlob.fromURL capability for static asset-backed thumbnails; verify the component's usage instructions before implementing."
+          "description": "Use the new UPI utilities to generate the correct UPI link for Premium (₹199) and Pro (₹499), wire Google Pay and PhonePe CTAs to attempt to open their respective deep-link/intent flows, and on failure present copy-to-clipboard actions for UPI ID and/or UPI link while preserving the existing 'UPI ID copied to clipboard' toast behavior."
         }
       ]
     },
     {
       "id": "REQ-8",
-      "summary": "Improve template gallery/detail layout to accommodate longer descriptions and the influencer section with consistent spacing and readable typography.",
+      "summary": "Require a non-empty payment reference/transaction ID on confirmation and send it with the subscription initiation call so it is persisted by the backend activation record.",
       "acceptanceCriteria": [
-        "TemplateCard and TemplateDetailPage continue to look balanced with longer template descriptions (no overflow outside cards; text remains clamped or wrapped appropriately).",
-        "The influencer section visually matches the existing shadcn/Tailwind styling (uses existing UI components where appropriate) and remains readable in light/dark mode."
+        "Checkout confirmation cannot proceed without a non-empty payment reference / transaction ID (existing validation preserved).",
+        "Backend stores the submitted payment reference alongside the user’s subscription activation (data retrievable for admins/devs via a backend query or by extending an existing user profile return shape).",
+        "If backend state/schema changes are required, a conditional backend migration is added so existing deployments upgrade safely without losing userProfiles."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/TemplateCard.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Adjust card typography/layout to better handle longer template descriptions without overflow (e.g., refine line clamping, spacing, and/or consistent content height) while keeping the overall visual balance and avoiding layout regressions."
+          "description": "Update the subscription mutation hook to accept a paymentReference/transactionId string and call the existing backend capability that includes a payment reference (per frontend/src/backend.d.ts: initiateSubscription(tier, duration, paymentReference)). Ensure React Query invalidations for subscription/user profile remain in place."
         },
         {
-          "path": "frontend/src/pages/TemplateDetailPage.tsx",
+          "path": "frontend/src/pages/CheckoutPage.tsx",
           "operation": "modify",
-          "description": "Refine spacing and typography on the detail page to accommodate longer descriptions and the influencer section (consistent vertical rhythm, readable text in light/dark mode). Compose existing shadcn/Tailwind components (do not edit components/ui) so the influencer section matches the rest of the design."
-        },
-        {
-          "path": "frontend/src/pages/TemplateGalleryPage.tsx",
-          "operation": "modify",
-          "description": "If needed to maintain a balanced gallery with richer content, tweak grid spacing and/or surrounding layout so cards remain visually consistent as descriptions become longer (without introducing new routes or editing components/ui)."
+          "description": "Wire the confirmation form's paymentReference state into the subscription mutation call, ensuring confirmation cannot proceed with an empty value (keep current validation/toast). Also improve error-to-toast mapping so backend authorization/registration errors are shown clearly to the user."
         }
       ]
     }

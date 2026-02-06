@@ -37,36 +37,42 @@ export default function BrandHeader() {
   const isPro = userProfile?.subscription === 'pro';
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 group">
-            <img src="/assets/generated/liinks-logo.dim_512x512.png" alt="Liinks" className="h-10 w-10 transition-transform group-hover:scale-110" />
+            <img 
+              src="/assets/generated/liinks-logo.dim_512x512.png" 
+              alt="Liinks" 
+              className="h-10 w-10 transition-transform duration-300 group-hover:scale-110" 
+            />
             <div className="flex flex-col">
-              <span className="text-xl font-bold bg-gradient-to-r from-primary via-chart-1 to-chart-2 bg-clip-text text-transparent">
+              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary via-chart-1 to-chart-2 bg-clip-text text-transparent">
                 Liinks
               </span>
-              <span className="text-[10px] text-muted-foreground hidden sm:block">link to your content and social accounts</span>
+              <span className="text-[10px] text-muted-foreground hidden sm:block leading-tight">
+                link to your content and social accounts
+              </span>
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-1">
             <Link
               to="/templates"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+              className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-md transition-all duration-200"
             >
               Templates
             </Link>
             <Link
               to="/pricing"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+              className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-md transition-all duration-200"
             >
               Pricing
             </Link>
             {isAuthenticated && userProfile && isPro && (
               <Link
                 to="/upload"
-                className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors flex items-center gap-1"
+                className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-md transition-all duration-200 flex items-center gap-1.5"
               >
                 <Upload className="h-4 w-4" />
                 Upload
@@ -80,7 +86,7 @@ export default function BrandHeader() {
               disabled={isLoggingIn}
               variant={isAuthenticated ? 'outline' : 'default'}
               size="sm"
-              className="hidden md:flex"
+              className="hidden md:flex shadow-sm hover:shadow transition-shadow"
             >
               {isLoggingIn ? 'Logging in...' : isAuthenticated ? 'Logout' : 'Login'}
             </Button>
@@ -95,14 +101,14 @@ export default function BrandHeader() {
                 <div className="flex flex-col space-y-4 mt-8">
                   <Link
                     to="/templates"
-                    className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2"
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2 px-3 rounded-md hover:bg-accent/50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Templates
                   </Link>
                   <Link
                     to="/pricing"
-                    className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2"
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2 px-3 rounded-md hover:bg-accent/50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Pricing
@@ -110,7 +116,7 @@ export default function BrandHeader() {
                   {isAuthenticated && userProfile && isPro && (
                     <Link
                       to="/upload"
-                      className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2 flex items-center gap-2"
+                      className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2 px-3 rounded-md hover:bg-accent/50 flex items-center gap-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <Upload className="h-4 w-4" />

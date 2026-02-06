@@ -9,7 +9,13 @@ export default {
     theme: {
         container: {
             center: true,
-            padding: '2rem',
+            padding: {
+                DEFAULT: '1rem',
+                sm: '2rem',
+                lg: '4rem',
+                xl: '5rem',
+                '2xl': '6rem',
+            },
             screens: {
                 '2xl': '1400px'
             }
@@ -63,10 +69,16 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             boxShadow: {
-                xs: '0 1px 2px 0 rgba(0,0,0,0.05)'
+                'xs': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+                'premium': '0 4px 20px -2px rgb(0 0 0 / 0.08), 0 2px 8px -2px rgb(0 0 0 / 0.04)',
+                'premium-lg': '0 10px 40px -4px rgb(0 0 0 / 0.12), 0 4px 16px -4px rgb(0 0 0 / 0.06)',
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
+                sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+            },
+            letterSpacing: {
+                tighter: '-0.02em',
+                tight: '-0.01em',
             },
             keyframes: {
                 'accordion-down': {
@@ -76,11 +88,16 @@ export default {
                 'accordion-up': {
                     from: { height: 'var(--radix-accordion-content-height)' },
                     to: { height: '0' }
+                },
+                'fade-in': {
+                    from: { opacity: '0', transform: 'translateY(10px)' },
+                    to: { opacity: '1', transform: 'translateY(0)' }
                 }
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
-                'accordion-up': 'accordion-up 0.2s ease-out'
+                'accordion-up': 'accordion-up 0.2s ease-out',
+                'fade-in': 'fade-in 0.4s ease-out'
             }
         }
     },

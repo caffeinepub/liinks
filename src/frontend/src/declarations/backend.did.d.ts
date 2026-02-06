@@ -96,6 +96,7 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'confirmSubscription' : ActorMethod<[], undefined>,
   'createBioPage' : ActorMethod<
     [TemplateId, string, string, Array<SocialHandle>, Array<Link>],
     undefined
@@ -108,12 +109,15 @@ export interface _SERVICE {
   'getTemplatesByCategory' : ActorMethod<[Category], Array<Template>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'hasActiveSubscription' : ActorMethod<[], boolean>,
+  'initiateSubscription' : ActorMethod<
+    [SubscriptionTier, Time, string],
+    undefined
+  >,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isRegistered' : ActorMethod<[], boolean>,
   'registerProfile' : ActorMethod<[string, string, string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'saveFamousInfluencer' : ActorMethod<[Category, UserProfile], undefined>,
-  'subscribe' : ActorMethod<[SubscriptionTier, Time], undefined>,
   'uploadTemplate' : ActorMethod<
     [string, Category, string, ExternalBlob, Uint8Array],
     TemplateId

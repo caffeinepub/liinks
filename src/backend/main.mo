@@ -1,20 +1,21 @@
 import Array "mo:core/Array";
-import Map "mo:core/Map";
-import Text "mo:core/Text";
-import Time "mo:core/Time";
-import Runtime "mo:core/Runtime";
 import Blob "mo:core/Blob";
 import List "mo:core/List";
+import Map "mo:core/Map";
 import Order "mo:core/Order";
-import Iter "mo:core/Iter";
-import Nat32 "mo:core/Nat32";
-import Char "mo:core/Char";
 import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
+import Time "mo:core/Time";
+import Iter "mo:core/Iter";
+import Migration "migration";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
+// Data migration via with-clause
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -77,6 +78,21 @@ actor {
     updatedAt : Time.Time;
   };
 
+  type SubscriptionRecord = {
+    tier : SubscriptionTier;
+    duration : Time.Time;
+    paymentReference : Text;
+    confirmedAt : Time.Time;
+  };
+
+  type TemporarySubscription = {
+    userId : UserId;
+    tier : SubscriptionTier;
+    duration : Time.Time;
+    paymentReference : Text;
+    initiatedAt : Time.Time;
+  };
+
   module UserProfile {
     func compare(left : UserProfile, right : UserProfile) : Order.Order {
       left.userId.toText().compare(right.userId.toText());
@@ -98,6 +114,8 @@ actor {
   let bioPages = Map.empty<UserId, BioPage>();
   let famousInfluencers = Map.empty<Category, List.List<UserProfile>>();
   let sharedBios = Map.empty<ShareId, BioPage>();
+  let pendingSubscriptions = Map.empty<UserId, TemporarySubscription>();
+  let confirmedSubscriptions = Map.empty<UserId, SubscriptionRecord>();
 
   // Helper functions
   func generateTemplateId(name : Text, timestamp : Time.Time) : TemplateId {
@@ -194,6 +212,7 @@ actor {
   };
 
   public shared ({ caller }) func registerProfile(firstName : Text, lastName : Text, email : Text, phoneNumber : Text) : async () {
+    // Anonymous users cannot register
     if (caller.toText() == "2vxsx-fae") {
       Runtime.trap("Anonymous users cannot register");
     };
@@ -261,14 +280,37 @@ actor {
     dynamicTemplates.concat(systemMatched);
   };
 
-  public shared ({ caller }) func subscribe(tier : SubscriptionTier, duration : Time.Time) : async () {
+  public shared ({ caller }) func initiateSubscription(tier : SubscriptionTier, duration : Time.Time, paymentReference : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can subscribe");
+      Runtime.trap("Unauthorized: Only registered users can initiate a subscription");
     };
 
-    let paymentSuccess = true; // Razorpay integration handled client-side
-    if (not paymentSuccess) {
-      Runtime.trap("Payment required for subscription");
+    // Verify user profile exists
+    if (not userProfiles.containsKey(caller)) {
+      Runtime.trap("Profile not found. Please register first");
+    };
+
+    // Store temporary subscription details for the user
+    let tempSubscription : TemporarySubscription = {
+      userId = caller;
+      tier;
+      duration;
+      paymentReference;
+      initiatedAt = Time.now();
+    };
+    pendingSubscriptions.add(caller, tempSubscription);
+  };
+
+  public shared ({ caller }) func confirmSubscription() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only registered users can confirm a subscription");
+    };
+
+    let tempSubscription = switch (pendingSubscriptions.get(caller)) {
+      case (null) {
+        Runtime.trap("No pending subscription found. Please initiate a subscription first");
+      };
+      case (?temp) { temp };
     };
 
     let profile = switch (userProfiles.get(caller)) {
@@ -278,12 +320,23 @@ actor {
       case (?profile) { profile };
     };
 
+    let subscriptionRecord : SubscriptionRecord = {
+      tier = tempSubscription.tier;
+      duration = tempSubscription.duration;
+      paymentReference = tempSubscription.paymentReference;
+      confirmedAt = Time.now();
+    };
+    confirmedSubscriptions.add(caller, subscriptionRecord);
+
     let updatedProfile = {
       profile with
-      subscription = ?tier;
-      subscriptionExpiry = ?duration;
+      subscription = ?tempSubscription.tier;
+      subscriptionExpiry = ?tempSubscription.duration;
     };
     userProfiles.add(caller, updatedProfile);
+
+    // Remove the temporary subscription after successful confirmation
+    pendingSubscriptions.remove(caller);
   };
 
   public query ({ caller }) func hasActiveSubscription() : async Bool {
@@ -308,7 +361,7 @@ actor {
       Runtime.trap("Unauthorized: Only registered users can create bio pages");
     };
 
-    // No subscription check - users can customize templates without active subscription
+    // Verify user profile exists
     let _profile = switch (userProfiles.get(caller)) {
       case (null) {
         Runtime.trap("Profile not found. Please register first");
@@ -378,7 +431,7 @@ actor {
   };
 
   public shared ({ caller }) func saveFamousInfluencer(category : Category, profile : UserProfile) : async () {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can save famous influencers");
     };
 

@@ -2,32 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-curated-hard-coded-dataset-of-top-influencers-with-instagram-handles-grouped-by-template-category-and-surface-it-in-the-template-browsing-experience",
-      "featureTitle": "Add a curated, hard-coded dataset of “top influencers” with Instagram handles, grouped by template category, and surface it in the template browsing experience.",
+      "featureId": "feature-add-explicit-payment-method-options-in-the-checkout-ui-for-inr-subscriptions-razorpay-google-pay-gpay-and-phonepe-the-page-must-present-these-as-clear-selectable-options-and-guide-the-user-through-completing-payment-for-the-selected-tier-amount",
+      "featureTitle": "Add explicit payment method options in the Checkout UI for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe. The page must present these as clear selectable options and guide the user through completing payment for the selected tier amount.",
       "files": [
-        "frontend/src/data/topInfluencers.ts",
-        "frontend/src/pages/TemplateDetailPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-richer-default-content-for-each-seeded-template-by-populating-template-editablecontent-with-a-json-payload-encoded-as-bytes-and-update-the-template-editor-to-load-and-apply-this-content-when-available",
-      "featureTitle": "Add richer default content for each seeded template by populating template.editableContent with a JSON payload (encoded as bytes) and update the template editor to load and apply this content when available.",
-      "files": [
-        "frontend/src/data/seedTemplates.ts",
-        "frontend/src/pages/TemplateEditorPage.tsx"
+        "frontend/src/pages/CheckoutPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -44,10 +22,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-introduce-various-designs-across-the-template-set-by-adding-multiple-visually-distinct-template-thumbnail-images-and-wiring-seeded-templates-to-use-them-instead-of-reusing-the-same-logo-hero-background-for-most-templates",
-      "featureTitle": "Introduce “various designs” across the template set by adding multiple visually distinct template thumbnail images and wiring seeded templates to use them (instead of reusing the same logo/hero background for most templates).",
+      "featureId": "feature-implement-upi-intent-deep-link-support-for-google-pay-gpay-and-phonepe-on-the-checkout-page-using-the-configured-receiver-upi-id-and-the-correct-plan-amount-so-that-tapping-the-button-opens-the-corresponding-upi-app-when-available-and-gracefully-falls-back-to-copy-to-clipboard-if-not",
+      "featureTitle": "Implement UPI intent/deep-link support for Google Pay (GPay) and PhonePe on the Checkout page using the configured receiver UPI ID and the correct plan amount, so that tapping the button opens the corresponding UPI app when available (and gracefully falls back to copy-to-clipboard if not).",
       "files": [
-        "frontend/src/data/seedTemplates.ts"
+        "frontend/src/pages/CheckoutPage.tsx",
+        "frontend/src/utils/upi.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -64,12 +43,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-template-gallery-and-or-template-detail-ui-to-better-accommodate-and-present-the-new-richer-content-longer-descriptions-and-the-influencer-section-with-consistent-spacing-and-readable-typography",
-      "featureTitle": "Update the template gallery and/or template detail UI to better accommodate and present the new richer content (longer descriptions and the influencer section) with consistent spacing and readable typography.",
+      "featureId": "feature-capture-the-user-s-payment-reference-transaction-id-during-confirmation-and-persist-it-in-the-backend-as-part-of-the-subscription-activation-record-so-support-can-audit-what-the-user-entered-update-the-api-surface-as-needed-and-keep-the-frontend-confirmation-form-wired-to-the-backend-call",
+      "featureTitle": "Capture the user’s payment reference / transaction ID during confirmation and persist it in the backend as part of the subscription activation record (so support can audit what the user entered). Update the API surface as needed and keep the frontend confirmation form wired to the backend call.",
       "files": [
-        "frontend/src/components/TemplateCard.tsx",
-        "frontend/src/pages/TemplateDetailPage.tsx",
-        "frontend/src/pages/TemplateGalleryPage.tsx"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/CheckoutPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",

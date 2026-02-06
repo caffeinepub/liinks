@@ -114,9 +114,14 @@ export function useSubscribe() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { tier: SubscriptionTier; duration: bigint }) => {
+    mutationFn: async (data: { tier: SubscriptionTier; duration: bigint; paymentReference: string }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.subscribe(data.tier, data.duration);
+      
+      // First initiate the subscription with payment reference
+      await actor.initiateSubscription(data.tier, data.duration, data.paymentReference);
+      
+      // Then confirm it
+      await actor.confirmSubscription();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });

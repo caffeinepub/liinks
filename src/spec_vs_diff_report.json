@@ -1,59 +1,52 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-05T11:06:26.656Z",
-  "summary": "REQ-5/REQ-8 appear implemented via a new influencers data module and UI updates in TemplateDetailPage/TemplateCard for richer content. REQ-6 is only partially implemented (editableContent added for some templates but not all). REQ-7 cannot be confirmed because the diff summary does not show the required new thumbnail image assets being added under frontend/public/assets/generated.",
+  "generatedAt": "2026-02-05T15:32:04.316Z",
+  "summary": "REQ-6 and REQ-7 appear implemented in Checkout UI (method selection + UPI deep-links with copy fallbacks) and supporting UPI utility added. Backend schema/migration for storing paymentReference in subscription records was added (supports part of REQ-8). However, the diff summary does not provide enough evidence that REQ-5’s authorization/registration trapping issues are fixed end-to-end, nor that REQ-8’s “retrievable for admins/devs” access path exists.",
   "missing_requirements": [
     {
-      "id": "REQ-6",
-      "requirement": "Seed templates in frontend/src/data/seedTemplates.ts include non-empty editableContent for each template.",
-      "reason": "At least one seeded template explicitly sets editableContent to an empty Uint8Array, and the diff summary indicates only the first few templates include rich editableContent. The requirement calls for non-empty editableContent for each seeded template.",
+      "id": "REQ-5",
+      "requirement": "Fix the subscription purchase flow so payment confirmation reliably activates Premium/Pro for registered users; ensure newly registered user can call subscription APIs without trapping unauthorized; if not registered return clear registration-required error.",
+      "reason": "backend/main.mo changes are truncated and do not show subscribe/authorization logic changes or explicit error handling for unregistered callers; cannot verify that the unauthorized trap is resolved or that a clear registration-required error is returned.",
       "evidence": [
-        "frontend/src/data/seedTemplates.ts"
+        "backend/main.mo (truncated)",
+        "frontend/src/hooks/useQueries.ts (truncated)"
       ]
     },
     {
-      "id": "REQ-7",
-      "requirement": "Add multiple visually distinct template thumbnail images under frontend/public/assets/generated and reference them from seed templates.",
-      "reason": "Seed templates reference new generated thumbnail paths, but the diff summary does not list any added/modified files under frontend/public/assets/generated (no image assets shown). Based on the provided diff summary alone, the new required images cannot be verified as added.",
+      "id": "REQ-8",
+      "requirement": "Backend stores submitted payment reference alongside subscription activation and makes it retrievable for admins/devs via a query or extending an existing user profile return shape.",
+      "reason": "While new backend types/maps include paymentReference and migration adds confirmedSubscriptions, the diff summary does not show any query/admin API or user profile shape extension to retrieve stored payment references.",
       "evidence": [
-        "frontend/src/data/seedTemplates.ts"
+        "backend/main.mo (truncated)",
+        "backend/migration.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Screenshot protection / anti-screenshot behavior (disabling right-click, key combos like PrintScreen, dragstart prevention) and related CSS classes.",
-      "reason": "Not requested in REQ-5 through REQ-8; adds new behavioral restrictions unrelated to influencer handles, editableContent defaults, thumbnails, or layout accommodation.",
+      "description": "Added AI-powered design assistant using ChatGPT API for template content generation.",
+      "reason": "Not requested; BuildRequest explicitly focused on checkout/payment fixes and UPI/Razorpay options, not AI content generation.",
       "evidence": [
-        "frontend/src/pages/TemplateDetailPage.tsx",
-        "frontend-file-summaries.txt (mentions screenshot protection CSS in frontend/src/index.css)"
+        "frontend-file-summaries.txt (\"frontend/src/pages/TemplateDetailPage.tsx\": \"AI-powered design assistant using ChatGPT API...\")"
       ]
     },
     {
-      "description": "Subscription/paywall and routing behavior changes (e.g., removing subscription guard from editor route; removing subscription badge in header; pricing/checkout flow changes).",
-      "reason": "Not part of the BuildRequest; the request explicitly focuses on influencers, editableContent defaults, thumbnail variety, and layout updates for richer content.",
+      "description": "Broad marketing/UI copy and styling changes across Landing/Pricing/Template pages and header/footer (including footer tagline update).",
+      "reason": "Not requested; outside the checkout payment scope of REQ-5 to REQ-8.",
       "evidence": [
-        "frontend-file-summaries.txt (App.tsx, BrandHeader.tsx, PricingPage.tsx, CheckoutPage.tsx, UploadTemplatePage.tsx)"
-      ]
-    },
-    {
-      "description": "Changes to template visibility without authentication (useGetAllTemplates modified to work without authentication requirement).",
-      "reason": "Not requested by REQ-5 through REQ-8; this is an access/authorization behavior change not mentioned in the BuildRequest.",
-      "evidence": [
-        "frontend-file-summaries.txt (useQueries.ts)"
+        "frontend-file-summaries.txt (LandingPage.tsx, PricingPage.tsx, TemplateGalleryPage.tsx, BrandHeader.tsx, App.tsx, tailwind.config.js)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/TemplateCard.tsx",
-    "frontend/src/data/seedTemplates.ts",
-    "frontend/src/data/topInfluencers.ts",
-    "frontend/src/pages/TemplateDetailPage.tsx",
-    "frontend/src/pages/TemplateEditorPage.tsx",
-    "frontend/src/pages/TemplateGalleryPage.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/CheckoutPage.tsx",
+    "frontend/src/utils/upi.ts",
     "project_state.json"
   ]
 }

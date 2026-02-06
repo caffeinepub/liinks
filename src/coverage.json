@@ -1,104 +1,76 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-05T11:06:26.694Z",
+  "generatedAt": "2026-02-05T15:32:04.319Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 4,
-    "implemented": 4,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-5",
-        "summary": "Add a curated, hard-coded dataset of “top influencers” with Instagram handles, grouped by template category, and surface it in the template browsing experience.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/data/topInfluencers.ts",
-          "frontend/src/pages/TemplateDetailPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/data/topInfluencers.ts",
-          "frontend/src/pages/TemplateDetailPage.tsx"
-        ]
+        "summary": "Fix the subscription purchase flow so payment confirmation reliably activates Premium/Pro for registered users (resolve the current “paying is not working” issue). Ensure the backend authorization state allows a newly registered user to call subscription APIs without trapping as unauthorized.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-6",
-        "summary": "Add richer default content for each seeded template by populating template.editableContent with a JSON payload (encoded as bytes) and update the template editor to load and apply this content when available.",
+        "summary": "Add explicit payment method options in the Checkout UI for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe. The page must present these as clear selectable options and guide the user through completing payment for the selected tier amount.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/data/seedTemplates.ts",
-          "frontend/src/pages/TemplateEditorPage.tsx"
+          "frontend/src/pages/CheckoutPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/data/seedTemplates.ts",
-          "frontend/src/pages/TemplateEditorPage.tsx"
+          "frontend/src/pages/CheckoutPage.tsx"
         ]
       },
       {
         "id": "REQ-7",
-        "summary": "Introduce “various designs” across the template set by adding multiple visually distinct template thumbnail images and wiring seeded templates to use them (instead of reusing the same logo/hero background for most templates).",
+        "summary": "Implement UPI intent/deep-link support for Google Pay (GPay) and PhonePe on the Checkout page using the configured receiver UPI ID and the correct plan amount, so that tapping the button opens the corresponding UPI app when available (and gracefully falls back to copy-to-clipboard if not).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png",
-          "frontend/src/data/seedTemplates.ts"
+          "frontend/src/utils/upi.ts",
+          "frontend/src/pages/CheckoutPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png",
-          "frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png",
-          "frontend/src/data/seedTemplates.ts"
+          "frontend/src/utils/upi.ts",
+          "frontend/src/pages/CheckoutPage.tsx"
         ]
       },
       {
         "id": "REQ-8",
-        "summary": "Update the template gallery and/or template detail UI to better accommodate and present the new richer content (longer descriptions and the influencer section) with consistent spacing and readable typography.",
+        "summary": "Capture the user’s payment reference / transaction ID during confirmation and persist it in the backend as part of the subscription activation record (so support can audit what the user entered). Update the API surface as needed and keep the frontend confirmation form wired to the backend call.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/TemplateCard.tsx",
-          "frontend/src/pages/TemplateDetailPage.tsx",
-          "frontend/src/pages/TemplateGalleryPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/CheckoutPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/TemplateCard.tsx",
-          "frontend/src/pages/TemplateDetailPage.tsx",
-          "frontend/src/pages/TemplateGalleryPage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/CheckoutPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png",
-    "frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png",
-    "frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png",
-    "frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png",
-    "frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png",
-    "frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png",
-    "frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png",
-    "frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png",
-    "frontend/src/components/TemplateCard.tsx",
-    "frontend/src/data/seedTemplates.ts",
-    "frontend/src/data/topInfluencers.ts",
-    "frontend/src/pages/TemplateDetailPage.tsx",
-    "frontend/src/pages/TemplateEditorPage.tsx",
-    "frontend/src/pages/TemplateGalleryPage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/CheckoutPage.tsx",
+    "frontend/src/utils/upi.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

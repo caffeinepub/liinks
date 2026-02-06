@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Enrich the template browsing and editing experience by adding curated “top influencer” Instagram handles per category, richer default template content, and more varied template thumbnail designs.
+**Goal:** Fix the subscription checkout so payments reliably activate Premium/Pro for registered users, and add clear INR payment options for Razorpay, Google Pay (GPay), and PhonePe (including UPI deep links).
 
 **Planned changes:**
-- Add a new frontend data module containing a curated, hard-coded list of top influencers (display name, Instagram handle, category) and show a “Top influencers in <category>” section on TemplateDetailPage when applicable (with handles linking to Instagram).
-- Populate each seeded template with non-empty `editableContent` (JSON encoded as bytes) to provide default editor values for title, bio text, social handles, and links; update TemplateEditorPage to load and apply this content with safe fallback on missing/invalid data.
-- Introduce multiple visually distinct template thumbnail images and wire seeded templates across categories to use different thumbnails (served as static assets).
-- Adjust TemplateCard and template detail layout/typography to better accommodate longer descriptions and the influencer section with consistent spacing and readability in light/dark mode.
+- Fix backend subscription purchase/authorization flow so newly signed-up users can successfully call subscription APIs without erroneous “unauthorized” traps, while unregistered users receive a clear “registration required” error.
+- Update Checkout UI to present selectable payment methods for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe, with method-specific instructions/CTA in English.
+- Add UPI intent/deep-link generation for GPay and PhonePe using the configured receiver UPI ID and the selected plan amount (₹199 Premium, ₹499 Pro), with graceful fallback to copy-to-clipboard when the app cannot be opened.
+- Require and submit a non-empty payment reference/transaction ID during confirmation, and persist it in the backend as part of the subscription activation record (including a safe conditional migration if schema/state changes are needed).
 
-**User-visible outcome:** Users can browse templates with varied thumbnail designs, see relevant top influencer Instagram handles by category on template details, and open a template in the editor pre-filled with richer default content (including multiple links and at least one social handle where provided).
+**User-visible outcome:** After signup, users can complete checkout, choose Razorpay/GPay/PhonePe, follow guided payment steps (including opening UPI apps when available), enter a transaction reference, and then see Premium/Pro unlock reliably after confirmation.

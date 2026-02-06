@@ -7,6 +7,13 @@ import { Skeleton } from '../components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 
+// Simple client-side badge mapping for featured templates
+const templateBadges: Record<string, 'creator-favorite' | 'trending' | 'most-used'> = {
+  'fashionista': 'creator-favorite',
+  'vlogger': 'trending',
+  'traveller': 'most-used',
+};
+
 export default function TemplateGalleryPage() {
   const { data: templates, isLoading, error } = useGetAllTemplates();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -20,10 +27,10 @@ export default function TemplateGalleryPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-bold">
-            Bio Page Templates
+            Templates for every kind of creator
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Browse our collection of professionally designed bio page templates. Customize any template to create your perfect link-in-bio page.
+            From digital creators to brands and communities — find a fully customizable template that fits your style and goals.
           </p>
         </div>
 
@@ -69,7 +76,11 @@ export default function TemplateGalleryPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredTemplates.map((template) => (
-                  <TemplateCard key={template.id} template={template} />
+                  <TemplateCard 
+                    key={template.id} 
+                    template={template}
+                    badge={templateBadges[template.id]}
+                  />
                 ))}
               </div>
             )}

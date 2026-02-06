@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'sonner';
 import LinksEditor from '../components/LinksEditor';
 import SocialHandlesEditor from '../components/SocialHandlesEditor';
+import BioFormulaHelper from '../components/BioFormulaHelper';
 import { Copy, ExternalLink, Check } from 'lucide-react';
 import type { Link, SocialHandle } from '../backend';
 
@@ -69,6 +70,20 @@ export default function TemplateEditorPage() {
       }
     }
   }, [template]);
+
+  const handleInsertBioFormula = (starterText: string) => {
+    if (bioText.trim()) {
+      // If bio already has content, ask for confirmation
+      if (window.confirm('This will replace your current bio text. Continue?')) {
+        setBioText(starterText);
+        toast.success('Bio formula template inserted');
+      }
+    } else {
+      // If empty, insert directly
+      setBioText(starterText);
+      toast.success('Bio formula template inserted');
+    }
+  };
 
   const handleSave = async () => {
     if (!title.trim() || !bioText.trim()) {
@@ -133,42 +148,49 @@ export default function TemplateEditorPage() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold">Customize Your Bio Page</h1>
-          <p className="text-muted-foreground">
+      <div className="max-w-5xl mx-auto space-y-8">
+        <div className="space-y-3">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Customize Your Bio Page</h1>
+          <p className="text-muted-foreground text-lg">
             Edit your template and add your personal touch
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <Card>
+            <Card className="shadow-sm border-border/60">
               <CardHeader>
                 <CardTitle>Basic Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Page Title</Label>
+                  <Label htmlFor="title" className="text-sm font-medium">Page Title</Label>
                   <Input
                     id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Your Name or Brand"
+                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
                   <Textarea
                     id="bio"
                     value={bioText}
                     onChange={(e) => setBioText(e.target.value)}
                     placeholder="Tell people about yourself..."
-                    rows={4}
+                    rows={6}
+                    className="resize-none"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Use the Bio Formula helper below for inspiration
+                  </p>
                 </div>
               </CardContent>
             </Card>
+
+            <BioFormulaHelper onInsert={handleInsertBioFormula} />
 
             <SocialHandlesEditor
               socialHandles={socialHandles}
@@ -179,10 +201,10 @@ export default function TemplateEditorPage() {
           <div className="space-y-6">
             <LinksEditor links={links} onChange={setLinks} />
 
-            <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50">
+            <Card className="border-primary/30 bg-gradient-to-br from-card to-primary/5 shadow-premium">
               <CardContent className="pt-6">
                 <Button
-                  className="w-full"
+                  className="w-full h-12 text-base shadow-sm hover:shadow transition-all"
                   size="lg"
                   onClick={handleSave}
                   disabled={createBioPageMutation.isPending}

@@ -45,7 +45,7 @@ export default function PricingPage() {
             Choose Your Plan
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Subscribe to unlock the ability to copy and customize templates for your bio pages
+            Start free. Upgrade when you're ready.
           </p>
         </div>
 
@@ -146,10 +146,8 @@ export default function PricingPage() {
           </Card>
         </div>
 
-        <div className="text-center text-sm text-muted-foreground max-w-2xl mx-auto">
-          <p>
-            All plans include access to view all templates. Subscription is required only for copying and customizing templates.
-          </p>
+        <div className="text-center text-sm text-muted-foreground max-w-2xl mx-auto space-y-2">
+          <p>No hidden fees. Cancel anytime.</p>
         </div>
       </div>
     </div>
