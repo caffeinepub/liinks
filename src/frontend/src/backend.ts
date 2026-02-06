@@ -93,6 +93,7 @@ export interface _CaffeineStorageRefillResult {
     success?: boolean;
     topped_up_amount?: bigint;
 }
+export type OtpCode = string;
 export type Category = string;
 export type Time = bigint;
 export interface _CaffeineStorageRefillInformation {
@@ -124,6 +125,7 @@ export interface Template {
     description: string;
     category: Category;
 }
+export type PhoneNumber = string;
 export type UserId = Principal;
 export type LinkId = string;
 export type SocialHandleId = string;
@@ -180,14 +182,18 @@ export interface backendInterface {
     getSharedBio(shareId: ShareId): Promise<BioPage | null>;
     getTemplatesByCategory(category: Category): Promise<Array<Template>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getVerifiedPhoneNumbers(): Promise<Array<string>>;
     hasActiveSubscription(): Promise<boolean>;
     initiateSubscription(tier: SubscriptionTier, duration: Time, paymentReference: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
+    isPhoneVerified(): Promise<boolean>;
     isRegistered(): Promise<boolean>;
     registerProfile(firstName: string, lastName: string, email: string, phoneNumber: string): Promise<void>;
+    requestOtp(phoneNumber: PhoneNumber, otpCode: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveFamousInfluencer(category: Category, profile: UserProfile): Promise<void>;
     uploadTemplate(name: string, category: Category, description: string, thumbnail: ExternalBlob, editableContent: Uint8Array): Promise<TemplateId>;
+    verifyPhoneNumber(phoneNumber: PhoneNumber, otpCode: OtpCode): Promise<void>;
 }
 import type { BioPage as _BioPage, Category as _Category, ExternalBlob as _ExternalBlob, SubscriptionTier as _SubscriptionTier, Template as _Template, TemplateId as _TemplateId, TemplateStatus as _TemplateStatus, Time as _Time, UserId as _UserId, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -430,6 +436,20 @@ export class Backend implements backendInterface {
             return from_candid_opt_n17(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getVerifiedPhoneNumbers(): Promise<Array<string>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getVerifiedPhoneNumbers();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getVerifiedPhoneNumbers();
+            return result;
+        }
+    }
     async hasActiveSubscription(): Promise<boolean> {
         if (this.processError) {
             try {
@@ -472,6 +492,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async isPhoneVerified(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isPhoneVerified();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isPhoneVerified();
+            return result;
+        }
+    }
     async isRegistered(): Promise<boolean> {
         if (this.processError) {
             try {
@@ -497,6 +531,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.registerProfile(arg0, arg1, arg2, arg3);
+            return result;
+        }
+    }
+    async requestOtp(arg0: PhoneNumber, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.requestOtp(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.requestOtp(arg0, arg1);
             return result;
         }
     }
@@ -539,6 +587,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.uploadTemplate(arg0, arg1, arg2, await to_candid_ExternalBlob_n32(this._uploadFile, this._downloadFile, arg3), arg4);
+            return result;
+        }
+    }
+    async verifyPhoneNumber(arg0: PhoneNumber, arg1: OtpCode): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyPhoneNumber(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyPhoneNumber(arg0, arg1);
             return result;
         }
     }

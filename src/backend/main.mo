@@ -8,13 +8,13 @@ import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Iter "mo:core/Iter";
-import Migration "migration";
+
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Migration "migration";
 
-// Data migration via with-clause
 (with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
@@ -30,6 +30,9 @@ actor {
   type SocialHandleId = Text;
   type LinkId = Text;
   type ShareId = Text;
+  type OtpCode = Text;
+  type PhoneNumber = Text;
+  type OtpId = Text;
 
   public type UserProfile = {
     userId : UserId;
@@ -93,6 +96,13 @@ actor {
     initiatedAt : Time.Time;
   };
 
+  public type OtpRequest = {
+    phoneNumber : PhoneNumber;
+    otpCode : OtpCode;
+    createdTime : Int;
+    verified : Bool;
+  };
+
   module UserProfile {
     func compare(left : UserProfile, right : UserProfile) : Order.Order {
       left.userId.toText().compare(right.userId.toText());
@@ -117,6 +127,9 @@ actor {
   let pendingSubscriptions = Map.empty<UserId, TemporarySubscription>();
   let confirmedSubscriptions = Map.empty<UserId, SubscriptionRecord>();
 
+  // OTP (One-Time-Password) Storage (new)
+  let activeOtps = Map.empty<OtpId, OtpRequest>();
+
   // Helper functions
   func generateTemplateId(name : Text, timestamp : Time.Time) : TemplateId {
     name.concat(timestamp.toText());
@@ -124,6 +137,10 @@ actor {
 
   func generateShareId(userId : UserId, templateId : TemplateId) : ShareId {
     userId.toText().concat("_").concat(templateId);
+  };
+
+  func generateOtpId(principal : Principal, phoneNumber : PhoneNumber) : OtpId {
+    principal.toText().concat(phoneNumber);
   };
 
   // System Bio Templates
@@ -211,12 +228,83 @@ actor {
     userProfiles.containsKey(caller);
   };
 
+  public query ({ caller }) func isPhoneVerified() : async Bool {
+    let phoneVerifications = getVerifiedPhoneNumbersByPrincipal(caller);
+    phoneVerifications.size() > 0;
+  };
+
+  public query ({ caller }) func getVerifiedPhoneNumbers() : async [Text] {
+    getVerifiedPhoneNumbersByPrincipal(caller).toArray();
+  };
+
+  func getVerifiedPhoneNumbersByPrincipal(_principal : Principal) : List.List<Text> {
+    let verifiedPhones = List.empty<Text>();
+    for ((_, req) in activeOtps.entries()) {
+      if (req.verified) {
+        verifiedPhones.add(req.phoneNumber);
+      };
+    };
+    verifiedPhones;
+  };
+
+  public shared ({ caller }) func requestOtp(phoneNumber : PhoneNumber, otpCode : Text) : async () {
+    if (phoneNumber.size() < 5) {
+      Runtime.trap("Invalid phone number, must be at least 5 characters");
+    };
+    if (otpCode.size() == 0) {
+      Runtime.trap("Invalid OTP code, must be at least 6 digits");
+    };
+
+    let otpId = generateOtpId(caller, phoneNumber);
+    let otpRequest : OtpRequest = {
+      phoneNumber;
+      otpCode;
+      createdTime = Time.now();
+      verified = false;
+    };
+    activeOtps.add(otpId, otpRequest);
+  };
+
+  public shared ({ caller }) func verifyPhoneNumber(phoneNumber : PhoneNumber, otpCode : OtpCode) : async () {
+    let otpId = generateOtpId(caller, phoneNumber);
+    switch (activeOtps.get(otpId)) {
+      case (null) { Runtime.trap("OTP request not found for phone number.") };
+      case (?req) {
+        // check if a records as not verified
+        if (not req.verified) {
+          // check OTP for correctness
+          if (req.otpCode != otpCode) {
+            Runtime.trap("Invalid OTP code. Please try again.");
+          };
+          let updatedRequest = {
+            req with
+            verified = true;
+          };
+          activeOtps.add(otpId, updatedRequest);
+        } else {
+          Runtime.trap("Phone number already verified");
+        };
+      };
+    };
+  };
+
   public shared ({ caller }) func registerProfile(firstName : Text, lastName : Text, email : Text, phoneNumber : Text) : async () {
     // Anonymous users cannot register
     if (caller.toText() == "2vxsx-fae") {
       Runtime.trap("Anonymous users cannot register");
     };
 
+    let otpId = generateOtpId(caller, phoneNumber);
+    switch (activeOtps.get(otpId)) {
+      case (null) { Runtime.trap("Phone number not verified") };
+      case (?req) {
+        if (not req.verified) {
+          Runtime.trap("Phone number not verified");
+        };
+      };
+    };
+
+    // if already registered, skip, error
     if (userProfiles.containsKey(caller)) {
       Runtime.trap("This user is already registered.");
     };
@@ -231,11 +319,16 @@ actor {
       subscriptionExpiry = null;
     };
     userProfiles.add(caller, profile);
+
+    // Automatically upgrade #guest to #user after successful registration
+    AccessControl.assignRole(accessControlState, caller, caller, #user);
   };
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+    // Check if user is registered (has a profile)
+    // A registered user should be able to access their profile
+    if (not userProfiles.containsKey(caller)) {
+      Runtime.trap("Profile not found. Please register first");
     };
     userProfiles.get(caller);
   };
@@ -248,8 +341,9 @@ actor {
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
+    // Check if user is registered (has a profile)
+    if (not userProfiles.containsKey(caller)) {
+      Runtime.trap("Profile not found. Please register first");
     };
     if (profile.userId != caller) {
       Runtime.trap("Unauthorized: Can only save your own profile");
@@ -281,11 +375,7 @@ actor {
   };
 
   public shared ({ caller }) func initiateSubscription(tier : SubscriptionTier, duration : Time.Time, paymentReference : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can initiate a subscription");
-    };
-
-    // Verify user profile exists
+    // Verify user profile exists (registered users only)
     if (not userProfiles.containsKey(caller)) {
       Runtime.trap("Profile not found. Please register first");
     };
@@ -302,8 +392,9 @@ actor {
   };
 
   public shared ({ caller }) func confirmSubscription() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can confirm a subscription");
+    // Verify user profile exists (registered users only)
+    if (not userProfiles.containsKey(caller)) {
+      Runtime.trap("Profile not found. Please register first");
     };
 
     let tempSubscription = switch (pendingSubscriptions.get(caller)) {
@@ -340,8 +431,9 @@ actor {
   };
 
   public query ({ caller }) func hasActiveSubscription() : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can check subscription status");
+    // Verify user profile exists (registered users only)
+    if (not userProfiles.containsKey(caller)) {
+      Runtime.trap("Profile not found. Please register first");
     };
     switch (userProfiles.get(caller)) {
       case (?profile) {
@@ -357,16 +449,9 @@ actor {
   };
 
   public shared ({ caller }) func createBioPage(templateId : TemplateId, title : Text, bioText : Text, socialHandles : [SocialHandle], links : [Link]) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can create bio pages");
-    };
-
-    // Verify user profile exists
-    let _profile = switch (userProfiles.get(caller)) {
-      case (null) {
-        Runtime.trap("Profile not found. Please register first");
-      };
-      case (?profile) { profile };
+    // Verify user profile exists (registered users only)
+    if (not userProfiles.containsKey(caller)) {
+      Runtime.trap("Profile not found. Please register first");
     };
 
     let bioPage : BioPage = {
@@ -392,8 +477,9 @@ actor {
     thumbnail : Storage.ExternalBlob,
     editableContent : Blob,
   ) : async TemplateId {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only registered users can upload templates");
+    // Verify user profile exists (registered users only)
+    if (not userProfiles.containsKey(caller)) {
+      Runtime.trap("Profile not found. Please register first");
     };
 
     let profile = switch (userProfiles.get(caller)) {

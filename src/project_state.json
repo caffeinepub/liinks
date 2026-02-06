@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 45,
+  "projectStateVersion": 57,
   "summary": "Subscription-based Liinks platform (link-in-bio template marketplace) on Internet Computer with Motoko backend and React/Vite/Tailwind frontend; includes influencer/category template library, signup with user profile fields, and premium/pro subscription paywall with INR payments (Razorpay + UPI QR upload/receiver details) gating template copying/customization and pro template uploads.",
   "architectural_notes": [
     "Backend is implemented in Motoko and composes reusable modules for authorization (access control) and blob storage.",
@@ -15,7 +15,10 @@
     "Project includes GitHub export tooling/integration for ICP CLI workflows (component:github-export-icp-cli v1.0.0)."
   ],
   "known_issues": [
-    "Payments/checkout currently not working for subscription purchase (user reports paying is not working)."
+    "Payments/checkout currently not working for subscription purchase (user reports paying is not working).",
+    "Pricing page: Premium and Pro subscription feature lists are currently the same; missing/incorrect differentiation between tiers.",
+    "Canva insertion/integration is missing (user reports: “there is no canva inserted”).",
+    "Template customization/editing currently not working (user reports templates can’t be customized)."
   ],
   "isFixRequest": true,
   "generatedImages": [
@@ -321,6 +324,126 @@
         "REQ-8"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-remove-the-openai-chatgpt-api-integration-from-the-template-detail-page-and-replace-it-with-a-fully-in-app-no-network-bio-writing-assistant-so-the-feature-works-reliably-without-requiring-an-api-key",
+      "title": "Remove the OpenAI/ChatGPT API integration from the Template Detail page and replace it with a fully in-app (no network) bio-writing assistant so the feature works reliably without requiring an API key.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-template-detail-page-assistant-section-copy-and-interactions-to-clearly-communicate-what-it-does-bio-inspiration-suggested-draft-and-provide-an-easy-way-for-the-user-to-use-the-generated-text-e-g-copy-to-clipboard-button-for-the-suggested-bio-content",
+      "title": "Update the Template Detail page assistant section copy and interactions to clearly communicate what it does (bio inspiration + suggested draft) and provide an easy way for the user to use the generated text (e.g., copy-to-clipboard button for the suggested bio content).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-subscription-benefit-lists-so-premium-and-pro-show-clearly-different-accurate-features-no-identical-duplicated-lists-on-the-pricing-page-and-add-any-missing-pro-only-benefits-that-are-actually-implemented-in-the-app",
+      "title": "Update the subscription benefit lists so Premium and Pro show clearly different, accurate features (no identical/duplicated lists) on the Pricing page, and add any missing Pro-only benefits that are actually implemented in the app.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-keep-the-checkout-page-plan-benefits-summary-what-you-ll-get-consistent-with-the-updated-pricing-plan-benefit-lists-including-showing-pro-only-items-only-when-tier-pro-and-avoiding-duplicated-premium-pro-items",
+      "title": "Keep the Checkout page plan-benefits summary (“What you'll get”) consistent with the updated Pricing plan benefit lists, including showing Pro-only items only when tier=pro and avoiding duplicated Premium/Pro items.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-single-source-of-truth-in-the-frontend-for-the-provided-platform-system-prompt-and-about-us-copy-using-the-exact-tailored-text-and-ensure-it-is-importable-across-the-app-without-duplicating-strings",
+      "title": "Add a single source of truth in the frontend for the provided Platform System Prompt and About Us copy, using the exact tailored text, and ensure it is importable across the app without duplicating strings.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-about-page-that-displays-the-provided-about-us-tailored-copy-in-a-readable-layout-add-a-new-route-for-it-and-add-navigation-access-to-it-from-the-header-and-footer",
+      "title": "Create an About page that displays the provided About Us (Tailored) copy in a readable layout, add a new route for it, and add navigation access to it from the header and footer.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-visible-canva-entry-point-in-the-template-editor-flow-so-users-can-open-canva-while-customizing-a-bio-page-the-current-templateeditorpage-has-no-canva-option-the-ui-must-include-a-clearly-labeled-button-link-that-opens-canva-in-a-new-tab-and-brief-guidance-text-explaining-that-users-can-create-graphics-in-canva-and-then-return-to-liinks-to-continue-editing",
+      "title": "Add a visible “Canva” entry point in the Template Editor flow so users can open Canva while customizing a bio page (the current TemplateEditorPage has no Canva option). The UI must include a clearly labeled button/link that opens Canva in a new tab and brief guidance text explaining that users can create graphics in Canva and then return to Liinks to continue editing.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-top-level-navigation-link-labeled-canva-in-the-header-navigation-desktop-and-mobile-so-authenticated-and-unauthenticated-users-can-access-canva-from-anywhere-in-the-app",
+      "title": "Add a top-level navigation link labeled “Canva” in the header navigation (desktop and mobile) so authenticated and unauthenticated users can access Canva from anywhere in the app.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-the-frontend-registered-user-gating-so-that-if-loading-the-caller-profile-fails-e-g-backend-throws-unauthorized-the-app-shows-a-clear-message-and-routes-the-user-to-signup-instead-of-leaving-the-user-stuck-or-preventing-template-customization",
+      "title": "Improve the frontend \"registered user\" gating so that if loading the caller profile fails (e.g., backend throws Unauthorized), the app shows a clear message and routes the user to /signup (instead of leaving the user stuck or preventing template customization).",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-the-template-editor-load-save-flow-so-templates-are-actually-customizable-end-to-end-selecting-a-template-in-templatedetailpage-must-open-templateeditorpage-with-populated-fields-edits-must-update-state-and-save-must-persist-successfully-and-show-the-share-dialog",
+      "title": "Audit and fix the template editor load/save flow so templates are actually customizable end-to-end: selecting a template in TemplateDetailPage must open TemplateEditorPage with populated fields, edits must update state, and Save must persist successfully and show the share dialog.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-explicit-canva-entry-point-on-the-template-detail-page-so-users-can-open-canva-while-viewing-a-template-not-only-from-the-editor-header-the-entry-point-must-open-https-www-canva-com-in-a-new-tab-and-include-brief-guidance-text-in-english-about-creating-graphics-in-canva-and-returning-to-liinks-to-continue-customizing",
+      "title": "Add an explicit Canva entry point on the Template Detail page so users can open Canva while viewing a template (not only from the editor/header). The entry point must open https://www.canva.com/ in a new tab and include brief guidance text in English about creating graphics in Canva and returning to Liinks to continue customizing.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-frontend-ui-flow-to-verify-a-phone-number-via-otp-before-completing-signup-update-the-signup-page-to-include-an-otp-request-otp-entry-step-and-only-allow-profile-creation-after-successful-otp-verification",
+      "title": "Add frontend UI flow to verify a phone number via OTP before completing signup: update the Signup page to include an OTP request + OTP entry step and only allow profile creation after successful OTP verification.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-dedicated-phone-verification-route-and-guard-when-an-authenticated-user-is-redirected-to-signup-due-to-registration-required-ensure-the-app-can-route-them-into-a-phone-verification-step-first-or-show-the-verification-step-inline-so-users-are-not-blocked-from-completing-registration",
+      "title": "Add a dedicated phone verification route and guard: when an authenticated user is redirected to /signup due to registration-required, ensure the app can route them into a phone verification step first (or show the verification step inline) so users are not blocked from completing registration.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-new-frontend-react-query-hooks-for-otp-operations-to-the-backend-actor-so-otp-request-verify-flows-call-the-canister-and-update-ui-state-cleanly",
+      "title": "Wire new frontend React Query hooks for OTP operations to the backend actor so OTP request/verify flows call the canister and update UI state cleanly.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-clear-in-app-fallback-message-explaining-otp-delivery-limitations-if-sms-delivery-is-not-available-when-an-otp-is-requested-the-ui-must-display-an-english-message-indicating-how-the-user-can-obtain-the-otp-in-the-current-environment-e-g-shown-in-app-dev-mode-rather-than-implying-an-sms-was-sent",
+      "title": "Add a clear in-app fallback message explaining OTP delivery limitations if SMS delivery is not available: when an OTP is requested, the UI must display an English message indicating how the user can obtain the OTP in the current environment (e.g., shown in-app/dev mode) rather than implying an SMS was sent.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -335,6 +458,60 @@
       "summary": "Fix the subscription purchase flow so payment confirmation reliably activates Premium/Pro for registered users (resolve the current “paying is not working” issue). Ensure the backend authorization state allows a newly registered user to call subscription APIs without trapping as unauthorized.",
       "reqIds": [
         "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Update Pricing/Subscriptions copy so Premium and Pro tiers list distinct benefits (fix currently identical feature lists) and add any missing Pro-only features/benefits to the Pro plan description.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Insert the tailored Platform System Prompt and About Us text into the platform (integrate into product copy/config so it’s used by the assistant and surfaced in the appropriate UI/marketing sections).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Add/restore Canva insertion/integration (Canva not currently inserted/available where expected in the product flow/UI).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Fix template customization/editing flow so users can actually customize templates (current issue: templates can’t be customized).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Fix backend authorization so a newly registered user can reliably access profile, subscription, and bio-page creation APIs (no \"Unauthorized\" traps after signup). Specifically, ensure that after calling registerProfile, the caller is recognized as a permitted \"user\" by the access control checks used in getCallerUserProfile, initiateSubscription/confirmSubscription/hasActiveSubscription, and createBioPage.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Implement phone-number OTP verification for signup and login (replace/avoid email-based verification and email welcome flows).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Implement backend support for phone-number OTP verification tied to the authenticated Internet Identity principal: (1) request an OTP for a provided phone number, (2) verify the OTP, and (3) query whether the caller’s phone number is verified.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Enforce phone verification in the backend for profile registration and registered-user flows: require that the caller has a verified phone number before allowing `registerProfile`, and ensure that endpoints that assume a registered user provide a clear error when the caller is not verified/registered.",
+      "reqIds": [
+        "REQ-22"
       ],
       "status": "pending"
     }

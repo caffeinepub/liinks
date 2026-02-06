@@ -6,13 +6,13 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { toast } from 'sonner';
 import LinksEditor from '../components/LinksEditor';
 import SocialHandlesEditor from '../components/SocialHandlesEditor';
 import BioFormulaHelper from '../components/BioFormulaHelper';
-import { Copy, ExternalLink, Check } from 'lucide-react';
+import { Copy, ExternalLink, Check, Palette } from 'lucide-react';
 import type { Link, SocialHandle } from '../backend';
 
 interface EditableContent {
@@ -24,7 +24,7 @@ interface EditableContent {
 
 export default function TemplateEditorPage() {
   const { templateId } = useParams({ from: '/editor/$templateId' });
-  const { data: templates } = useGetAllTemplates();
+  const { data: templates, isLoading: templatesLoading } = useGetAllTemplates();
   const createBioPageMutation = useCreateBioPage();
   const { identity } = useInternetIdentity();
   const navigate = useNavigate();
@@ -48,25 +48,49 @@ export default function TemplateEditorPage() {
           const jsonString = decoder.decode(template.editableContent);
           const content: EditableContent = JSON.parse(jsonString);
           
-          // Initialize state from editableContent
-          if (content.title) setTitle(content.title);
-          if (content.bioText) setBioText(content.bioText);
+          // Initialize state from editableContent with robust fallbacks
+          setTitle(content.title || template.name || '');
+          setBioText(content.bioText || template.description || '');
+          
+          // Normalize social handles
           if (content.socialHandles && Array.isArray(content.socialHandles)) {
-            setSocialHandles(content.socialHandles);
+            const normalizedHandles = content.socialHandles.map((handle, idx) => ({
+              id: handle.id || `social-${idx}`,
+              platform: handle.platform || '',
+              username: handle.username || '',
+              url: handle.url || '',
+            }));
+            setSocialHandles(normalizedHandles);
+          } else {
+            setSocialHandles([]);
           }
+          
+          // Normalize links
           if (content.links && Array.isArray(content.links)) {
-            setLinks(content.links);
+            const normalizedLinks = content.links.map((link, idx) => ({
+              id: link.id || `link-${idx}`,
+              title: link.title || '',
+              url: link.url || '',
+              description: link.description || '',
+            }));
+            setLinks(normalizedLinks);
+          } else {
+            setLinks([]);
           }
         } catch (error) {
           // Fallback to template name/description if JSON parsing fails
           console.warn('Failed to parse editableContent, using fallback:', error);
-          setTitle(template.name);
-          setBioText(template.description);
+          setTitle(template.name || '');
+          setBioText(template.description || '');
+          setSocialHandles([]);
+          setLinks([]);
         }
       } else {
         // Fallback when editableContent is empty
-        setTitle(template.name);
-        setBioText(template.description);
+        setTitle(template.name || '');
+        setBioText(template.description || '');
+        setSocialHandles([]);
+        setLinks([]);
       }
     }
   }, [template]);
@@ -97,12 +121,23 @@ export default function TemplateEditorPage() {
     }
 
     try {
+      // Ensure all links and social handles have proper IDs
+      const normalizedLinks = links.map((link, idx) => ({
+        ...link,
+        id: link.id || `link-${Date.now()}-${idx}`,
+      }));
+
+      const normalizedSocialHandles = socialHandles.map((handle, idx) => ({
+        ...handle,
+        id: handle.id || `social-${Date.now()}-${idx}`,
+      }));
+
       await createBioPageMutation.mutateAsync({
         templateId,
         title,
         bioText,
-        socialHandles,
-        links,
+        socialHandles: normalizedSocialHandles,
+        links: normalizedLinks,
       });
       
       // Generate share URL using principal as shareId
@@ -114,6 +149,7 @@ export default function TemplateEditorPage() {
       
       toast.success('Bio page saved successfully!');
     } catch (error: any) {
+      console.error('Save error:', error);
       toast.error(error.message || 'Failed to save bio page');
     }
   };
@@ -132,6 +168,23 @@ export default function TemplateEditorPage() {
   const handleOpenInNewTab = () => {
     window.open(shareUrl, '_blank', 'noopener,noreferrer');
   };
+
+  const handleOpenCanva = () => {
+    window.open('https://www.canva.com/', '_blank', 'noopener,noreferrer');
+  };
+
+  if (templatesLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading template...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!template) {
     return (
@@ -191,6 +244,28 @@ export default function TemplateEditorPage() {
             </Card>
 
             <BioFormulaHelper onInsert={handleInsertBioFormula} />
+
+            <Card className="shadow-sm border-border/60 bg-gradient-to-br from-card to-accent/5">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-primary" />
+                  <CardTitle>Design with Canva</CardTitle>
+                </div>
+                <CardDescription>
+                  Create stunning graphics and visuals in Canva, then return to Liinks to add them to your bio page
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  onClick={handleOpenCanva}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open Canva
+                </Button>
+              </CardContent>
+            </Card>
 
             <SocialHandlesEditor
               socialHandles={socialHandles}

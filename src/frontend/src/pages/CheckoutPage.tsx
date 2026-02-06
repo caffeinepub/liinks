@@ -11,6 +11,7 @@ import { SiGooglepay } from 'react-icons/si';
 import PaymentQrUploader from '../components/PaymentQrUploader';
 import { SubscriptionTier } from '../backend';
 import { generateUpiLink, openGooglePay, openPhonePe, copyToClipboard } from '../utils/upi';
+import { getBenefitsForTier } from '../constants/subscriptionBenefits';
 
 type PaymentMethod = 'razorpay' | 'gpay' | 'phonepe';
 
@@ -33,6 +34,10 @@ export default function CheckoutPage() {
     amount,
     transactionNote: `${tierName} Subscription`,
   });
+
+  // Type guard to ensure tier is valid
+  const validTier: 'premium' | 'pro' = tier === 'pro' ? 'pro' : 'premium';
+  const benefits = getBenefitsForTier(validTier);
 
   const copyUpiId = async () => {
     const success = await copyToClipboard(upiId);
@@ -306,20 +311,12 @@ export default function CheckoutPage() {
                 <div className="p-4 bg-muted/50 rounded-lg space-y-2">
                   <h4 className="font-medium text-sm">What you'll get:</h4>
                   <ul className="space-y-2 text-sm">
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      <span>Access to all premium templates</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      <span>Copy and customize templates</span>
-                    </li>
-                    {tier === 'pro' && (
-                      <li className="flex items-start gap-2">
+                    {benefits.map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-2">
                         <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        <span>Upload your own templates</span>
+                        <span>{benefit}</span>
                       </li>
-                    )}
+                    ))}
                   </ul>
                 </div>
               </div>

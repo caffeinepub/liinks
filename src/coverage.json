@@ -1,57 +1,80 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-05T15:32:04.319Z",
+  "generatedAt": "2026-02-06T19:10:25.283Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 3,
+    "total": 6,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-5",
-        "summary": "Fix the subscription purchase flow so payment confirmation reliably activates Premium/Pro for registered users (resolve the current “paying is not working” issue). Ensure the backend authorization state allows a newly registered user to call subscription APIs without trapping as unauthorized.",
+        "id": "REQ-21",
+        "summary": "Implement backend support for phone-number OTP verification tied to the authenticated Internet Identity principal: (1) request an OTP for a provided phone number, (2) verify the OTP, and (3) query whether the caller’s phone number is verified.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-6",
-        "summary": "Add explicit payment method options in the Checkout UI for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe. The page must present these as clear selectable options and guide the user through completing payment for the selected tier amount.",
+        "id": "REQ-22",
+        "summary": "Enforce phone verification in the backend for profile registration and registered-user flows: require that the caller has a verified phone number before allowing `registerProfile`, and ensure that endpoints that assume a registered user provide a clear error when the caller is not verified/registered.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-23",
+        "summary": "Add frontend UI flow to verify a phone number via OTP before completing signup: update the Signup page to include an OTP request + OTP entry step and only allow profile creation after successful OTP verification.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/pages/SignupPage.tsx",
+          "frontend/src/components/PhoneOtpGate.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/pages/SignupPage.tsx",
+          "frontend/src/components/PhoneOtpGate.tsx"
         ]
       },
       {
-        "id": "REQ-7",
-        "summary": "Implement UPI intent/deep-link support for Google Pay (GPay) and PhonePe on the Checkout page using the configured receiver UPI ID and the correct plan amount, so that tapping the button opens the corresponding UPI app when available (and gracefully falls back to copy-to-clipboard if not).",
+        "id": "REQ-24",
+        "summary": "Add a dedicated phone verification route and guard: when an authenticated user is redirected to /signup due to registration-required, ensure the app can route them into a phone verification step first (or show the verification step inline) so users are not blocked from completing registration.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/upi.ts",
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/pages/PhoneVerificationPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/SignupPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/upi.ts",
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/pages/PhoneVerificationPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/SignupPage.tsx"
         ]
       },
       {
-        "id": "REQ-8",
-        "summary": "Capture the user’s payment reference / transaction ID during confirmation and persist it in the backend as part of the subscription activation record (so support can audit what the user entered). Update the API surface as needed and keep the frontend confirmation form wired to the backend call.",
+        "id": "REQ-25",
+        "summary": "Wire new frontend React Query hooks for OTP operations to the backend actor so OTP request/verify flows call the canister and update UI state cleanly.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/components/PhoneOtpGate.tsx"
         ],
         "matchedFiles": [
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/components/PhoneOtpGate.tsx"
+        ]
+      },
+      {
+        "id": "REQ-26",
+        "summary": "Add a clear in-app fallback message explaining OTP delivery limitations if SMS delivery is not available: when an OTP is requested, the UI must display an English message indicating how the user can obtain the OTP in the current environment (e.g., shown in-app/dev mode) rather than implying an SMS was sent.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/PhoneOtpGate.tsx",
+          "frontend/src/utils/otp.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/PhoneOtpGate.tsx"
         ]
       }
     ]
@@ -60,17 +83,18 @@
     "backend/main.mo",
     "backend/migration.mo",
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/components/PhoneOtpGate.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/utils/upi.ts",
+    "frontend/src/pages/PhoneVerificationPage.tsx",
+    "frontend/src/pages/SignupPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

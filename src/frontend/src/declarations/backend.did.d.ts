@@ -29,6 +29,8 @@ export interface Link {
   'description' : string,
 }
 export type LinkId = string;
+export type OtpCode = string;
+export type PhoneNumber = string;
 export type ShareId = string;
 export interface SocialHandle {
   'id' : SocialHandleId,
@@ -108,20 +110,24 @@ export interface _SERVICE {
   'getSharedBio' : ActorMethod<[ShareId], [] | [BioPage]>,
   'getTemplatesByCategory' : ActorMethod<[Category], Array<Template>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getVerifiedPhoneNumbers' : ActorMethod<[], Array<string>>,
   'hasActiveSubscription' : ActorMethod<[], boolean>,
   'initiateSubscription' : ActorMethod<
     [SubscriptionTier, Time, string],
     undefined
   >,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isPhoneVerified' : ActorMethod<[], boolean>,
   'isRegistered' : ActorMethod<[], boolean>,
   'registerProfile' : ActorMethod<[string, string, string, string], undefined>,
+  'requestOtp' : ActorMethod<[PhoneNumber, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'saveFamousInfluencer' : ActorMethod<[Category, UserProfile], undefined>,
   'uploadTemplate' : ActorMethod<
     [string, Category, string, ExternalBlob, Uint8Array],
     TemplateId
   >,
+  'verifyPhoneNumber' : ActorMethod<[PhoneNumber, OtpCode], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

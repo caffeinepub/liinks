@@ -1,63 +1,93 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Checkout UI payment options + UPI intents and payment reference wiring",
+  "title": "Phone-number OTP verification gate for signup and registered access (frontend-only)",
   "requirements": [
     {
-      "id": "REQ-6",
-      "summary": "Add Razorpay, Google Pay (GPay), and PhonePe as explicit selectable payment methods in the Checkout UI for INR tiers, updating instructions/CTA based on selection.",
+      "id": "REQ-23",
+      "summary": "Update Signup page to require phone-number OTP verification before enabling profile registration submission.",
       "acceptanceCriteria": [
-        "Checkout page shows payment method choices that include: Razorpay, Google Pay (GPay), and PhonePe.",
-        "Selecting a method updates the instructions/CTA shown to the user for that method.",
-        "All user-facing copy is in English."
+        "Signup page collects phone number, lets the user request an OTP, then prompts for OTP input and verifies it before enabling the existing profile form submission.",
+        "After OTP verification succeeds, the user can complete the existing signup fields and submit registration successfully.",
+        "User-facing text is in English and clearly explains the steps (enter phone → request OTP → enter OTP → continue).",
+        "Error states are handled with clear messages (invalid OTP, expired OTP, too many attempts if implemented, etc.)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "path": "frontend/src/pages/SignupPage.tsx",
           "operation": "modify",
-          "description": "Add a payment method selector UI (Razorpay, Google Pay, PhonePe) and conditionally render method-specific instructions/primary CTA for the selected tier amount. Keep all copy in English, and keep existing QR upload + confirmation section intact."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Implement UPI intent/deep-link flows for GPay and PhonePe with a graceful fallback to copy-to-clipboard, preserving existing UPI ID copy behavior.",
-      "acceptanceCriteria": [
-        "For both Premium (₹199) and Pro (₹499), the Checkout page can generate a UPI payment intent link that includes payee VPA (UPI ID) and amount.",
-        "Buttons for Google Pay and PhonePe attempt to open the respective app via intent/deep-link; if opening fails, the UI provides a copy-to-clipboard fallback (UPI ID and/or UPI link).",
-        "The existing “UPI ID copied to clipboard” behavior continues to work."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/upi.ts",
-          "operation": "create",
-          "description": "Create a small UPI utility module to build a standard UPI payment link (including payee VPA and amount) and helper(s) to attempt app-open for Google Pay and PhonePe with a timeout-based fallback signal for the UI to show copy-to-clipboard options."
+          "description": "Refactor the signup flow into a phone-verification-first, multi-step UI: (1) phone input + request OTP, (2) OTP entry + verify, (3) existing profile fields + submit. Disable profile submission until verification succeeds; show clear English step guidance and handle backend errors (invalid/expired/missing OTP) with user-friendly messages. Ensure the email field remains a normal profile field (no email verification)."
         },
         {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
-          "operation": "modify",
-          "description": "Use the new UPI utilities to generate the correct UPI link for Premium (₹199) and Pro (₹499), wire Google Pay and PhonePe CTAs to attempt to open their respective deep-link/intent flows, and on failure present copy-to-clipboard actions for UPI ID and/or UPI link while preserving the existing 'UPI ID copied to clipboard' toast behavior."
+          "path": "frontend/src/components/PhoneOtpGate.tsx",
+          "operation": "create",
+          "description": "Create a reusable Phone OTP gate component used by Signup and the dedicated verification route. It should manage: phone input, request-OTP action, OTP input, verify action, step transitions, and a success state that notifies the parent when verified."
         }
       ]
     },
     {
-      "id": "REQ-8",
-      "summary": "Require a non-empty payment reference/transaction ID on confirmation and send it with the subscription initiation call so it is persisted by the backend activation record.",
+      "id": "REQ-24",
+      "summary": "Add a dedicated /verify-phone route and adjust registration-required guard behavior so authenticated-but-unregistered users can complete phone verification and then registration without redirect loops.",
       "acceptanceCriteria": [
-        "Checkout confirmation cannot proceed without a non-empty payment reference / transaction ID (existing validation preserved).",
-        "Backend stores the submitted payment reference alongside the user’s subscription activation (data retrievable for admins/devs via a backend query or by extending an existing user profile return shape).",
-        "If backend state/schema changes are required, a conditional backend migration is added so existing deployments upgrade safely without losing userProfiles."
+        "A user who is authenticated (Internet Identity) but not registered can complete phone OTP verification and then complete profile registration without getting stuck in redirects.",
+        "The routing/guard behavior remains consistent with the existing `RequireAuth` / `RequireRegistered` pattern in `frontend/src/App.tsx`."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/PhoneVerificationPage.tsx",
+          "operation": "create",
+          "description": "Add a dedicated phone verification page that renders the shared PhoneOtpGate component. After successful verification, guide the user to continue to profile registration (navigate to /signup with a clear reason parameter for messaging)."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register a new authenticated route for /verify-phone (wrapped in RequireAuth) and wire it into the router tree. Update the existing registration-required redirect flow (RequireRegistered → redirect) to avoid trapping users: when profile is missing, redirect users to /verify-phone (or to /signup with a verification step) in a deterministic way that allows proceeding to registration afterwards."
+        },
+        {
+          "path": "frontend/src/pages/SignupPage.tsx",
+          "operation": "modify",
+          "description": "Ensure /signup can accept navigation from /verify-phone and does not cause redirect loops: if arriving after verification, skip/mark the phone OTP step as complete and allow profile submission; keep the existing reason-based guidance messaging in English."
+        }
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "summary": "Add React Query hooks for OTP request/verify/status and wire them to the backend actor for clean UI state updates.",
+      "acceptanceCriteria": [
+        "`frontend/src/hooks/useQueries.ts` (or equivalent hook location) includes mutations/queries to request OTP, verify OTP, and check verification status using the backend actor.",
+        "OTP mutations have success/error handling suitable for the Signup UI (e.g., enabling next step on success).",
+        "No changes are made to immutable hook files listed in `frontend.immutablePaths`."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Update the subscription mutation hook to accept a paymentReference/transactionId string and call the existing backend capability that includes a payment reference (per frontend/src/backend.d.ts: initiateSubscription(tier, duration, paymentReference)). Ensure React Query invalidations for subscription/user profile remain in place."
+          "description": "Add hooks for OTP operations using the existing actor + React Query patterns: (1) mutation to request OTP, (2) mutation to verify OTP, and (3) query to check verification status (isPhoneVerified). Ensure hooks expose error/success signals suitable for step transitions and invalidate/refresh the phone-verification status query on success."
         },
         {
-          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "path": "frontend/src/components/PhoneOtpGate.tsx",
           "operation": "modify",
-          "description": "Wire the confirmation form's paymentReference state into the subscription mutation call, ensuring confirmation cannot proceed with an empty value (keep current validation/toast). Also improve error-to-toast mapping so backend authorization/registration errors are shown clearly to the user."
+          "description": "Integrate the new OTP hooks into the shared component so UI actions call the canister through the actor and update UI state cleanly (loading, success, error)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "summary": "Show an explicit in-app OTP delivery limitation message (no SMS) and provide clear instructions for obtaining the OTP in this environment.",
+      "acceptanceCriteria": [
+        "The app does not claim that an SMS was sent if there is no SMS integration.",
+        "The user sees clear instructions on how to proceed with OTP in the current build environment (English copy)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/PhoneOtpGate.tsx",
+          "operation": "modify",
+          "description": "When OTP is requested, display a clear English message that this build does not send SMS and explain how to obtain the OTP. Implement a safe, explicit fallback for the current environment (e.g., show the generated OTP code in-app after requesting) without implying an SMS was sent."
+        },
+        {
+          "path": "frontend/src/utils/otp.ts",
+          "operation": "create",
+          "description": "Add a small utility for generating a user-enterable OTP code for this environment (e.g., numeric code). Use it to support the no-SMS flow so the UI can instruct users how to proceed without third-party providers."
         }
       ]
     }

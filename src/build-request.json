@@ -1,91 +1,128 @@
 {
   "kind": "build_request",
-  "title": "Fix checkout payments and add Razorpay, GPay, and PhonePe options",
-  "priority": "high",
+  "title": "Add phone-number OTP verification gate for signup and app access (no email verification)",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-5",
-      "text": "Fix the subscription purchase flow so payment confirmation reliably activates Premium/Pro for registered users (resolve the current “paying is not working” issue). Ensure the backend authorization state allows a newly registered user to call subscription APIs without trapping as unauthorized.",
+      "id": "REQ-21",
+      "text": "Implement backend support for phone-number OTP verification tied to the authenticated Internet Identity principal: (1) request an OTP for a provided phone number, (2) verify the OTP, and (3) query whether the caller’s phone number is verified.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "paying is not working  ...add the razor pay and gpay and phonepay"
+          "dont enabled the email id verify the phone number using otp verification for login and signup"
         ]
       },
       "acceptanceCriteria": [
-        "After a user completes Signup, calling backend subscribe(...) does not trap with an authorization error.",
-        "If a user is not registered, subscribe(...) returns a clear error (trap message) indicating registration is required.",
-        "Manual QA: signup → checkout → confirm payment results in hasActiveSubscription() returning true and UI gating unlocking Premium/Pro as expected."
+        "Backend exposes new canister methods to request and verify OTP and to read verification status for the caller.",
+        "OTP verification state is stored per caller principal (not globally) and survives within the canister’s in-memory state for the session (consistent with existing Map-based state usage).",
+        "Requesting a new OTP invalidates any previously issued OTP for that caller/phone combination.",
+        "OTP verification has an expiry window (e.g., a short TTL) enforced by the backend; expired OTPs are rejected.",
+        "Backend methods return clear errors (trap messages) for invalid OTP, expired OTP, and missing OTP request."
       ]
     },
     {
-      "id": "REQ-6",
-      "text": "Add explicit payment method options in the Checkout UI for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe. The page must present these as clear selectable options and guide the user through completing payment for the selected tier amount.",
+      "id": "REQ-22",
+      "text": "Enforce phone verification in the backend for profile registration and registered-user flows: require that the caller has a verified phone number before allowing `registerProfile`, and ensure that endpoints that assume a registered user provide a clear error when the caller is not verified/registered.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "verify the phone number using otp verification for login and signup"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Calling `registerProfile(...)` without a verified phone number fails with a clear error message instructing the user to verify their phone number first.",
+        "If the caller is authenticated but not phone-verified, backend returns a deterministic error message (not a generic trap) when attempting gated actions that require verified registration.",
+        "Existing behavior for already-registered users remains unchanged except for the added requirement that registration cannot happen until phone is verified."
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "text": "Add frontend UI flow to verify a phone number via OTP before completing signup: update the Signup page to include an OTP request + OTP entry step and only allow profile creation after successful OTP verification.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "add the razor pay and gpay and phonepay"
+          "verify the phone number using otp verification for login and signup"
         ]
       },
       "acceptanceCriteria": [
-        "Checkout page shows payment method choices that include: Razorpay, Google Pay (GPay), and PhonePe.",
-        "Selecting a method updates the instructions/CTA shown to the user for that method.",
-        "All user-facing copy is in English."
+        "Signup page collects phone number, lets the user request an OTP, then prompts for OTP input and verifies it before enabling the existing profile form submission.",
+        "After OTP verification succeeds, the user can complete the existing signup fields and submit registration successfully.",
+        "User-facing text is in English and clearly explains the steps (enter phone → request OTP → enter OTP → continue).",
+        "Error states are handled with clear messages (invalid OTP, expired OTP, too many attempts if implemented, etc.)."
       ]
     },
     {
-      "id": "REQ-7",
-      "text": "Implement UPI intent/deep-link support for Google Pay (GPay) and PhonePe on the Checkout page using the configured receiver UPI ID and the correct plan amount, so that tapping the button opens the corresponding UPI app when available (and gracefully falls back to copy-to-clipboard if not).",
+      "id": "REQ-24",
+      "text": "Add a dedicated phone verification route and guard: when an authenticated user is redirected to /signup due to registration-required, ensure the app can route them into a phone verification step first (or show the verification step inline) so users are not blocked from completing registration.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "add the razor pay and gpay and phonepay"
+          "verify the phone number using otp verification for login and signup"
         ]
       },
       "acceptanceCriteria": [
-        "For both Premium (₹199) and Pro (₹499), the Checkout page can generate a UPI payment intent link that includes payee VPA (UPI ID) and amount.",
-        "Buttons for Google Pay and PhonePe attempt to open the respective app via intent/deep-link; if opening fails, the UI provides a copy-to-clipboard fallback (UPI ID and/or UPI link).",
-        "The existing “UPI ID copied to clipboard” behavior continues to work."
+        "A user who is authenticated (Internet Identity) but not registered can complete phone OTP verification and then complete profile registration without getting stuck in redirects.",
+        "The routing/guard behavior remains consistent with the existing `RequireAuth` / `RequireRegistered` pattern in `frontend/src/App.tsx`."
       ]
     },
     {
-      "id": "REQ-8",
-      "text": "Capture the user’s payment reference / transaction ID during confirmation and persist it in the backend as part of the subscription activation record (so support can audit what the user entered). Update the API surface as needed and keep the frontend confirmation form wired to the backend call.",
-      "target": "both",
+      "id": "REQ-25",
+      "text": "Wire new frontend React Query hooks for OTP operations to the backend actor so OTP request/verify flows call the canister and update UI state cleanly.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "paying is not working  ...add the razor pay and gpay and phonepay"
+          "verify the phone number using otp verification for login and signup"
         ]
       },
       "acceptanceCriteria": [
-        "Checkout confirmation cannot proceed without a non-empty payment reference / transaction ID (existing validation preserved).",
-        "Backend stores the submitted payment reference alongside the user’s subscription activation (data retrievable for admins/devs via a backend query or by extending an existing user profile return shape).",
-        "If backend state/schema changes are required, a conditional backend migration is added so existing deployments upgrade safely without losing userProfiles."
+        "`frontend/src/hooks/useQueries.ts` (or equivalent hook location) includes mutations/queries to request OTP, verify OTP, and check verification status using the backend actor.",
+        "OTP mutations have success/error handling suitable for the Signup UI (e.g., enabling next step on success).",
+        "No changes are made to immutable hook files listed in `frontend.immutablePaths`."
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "text": "Add a clear in-app fallback message explaining OTP delivery limitations if SMS delivery is not available: when an OTP is requested, the UI must display an English message indicating how the user can obtain the OTP in the current environment (e.g., shown in-app/dev mode) rather than implying an SMS was sent.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "verify the phone number using otp verification for login and signup"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The app does not claim that an SMS was sent if there is no SMS integration.",
+        "The user sees clear instructions on how to proceed with OTP in the current build environment (English copy)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; add backend/migration.mo only if state schema changes.",
-    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "No third-party authentication beyond Internet Identity.",
-    "No external databases or non-Motoko backend services."
+    "Do not implement or require third-party SMS/email providers (no Twilio/WhatsApp/SendGrid/SMTP).",
+    "Keep all backend logic in the single Motoko actor at `backend/main.mo` (single-actor architecture).",
+    "Do not edit any paths listed under `frontend.immutablePaths` in SYSTEM_CONTEXT.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Implementing real-time payment verification with Razorpay webhooks or external servers.",
-    "Adding non-INR payment rails (cards, PayPal, crypto wallets).",
-    "Building a full transaction ledger UI for users (beyond storing the reference and activating subscription)."
+    "Email-based signup verification or welcome emails.",
+    "Password-based authentication (the app continues to use Internet Identity for authentication).",
+    "Real SMS delivery integration (provider hookup) in this build."
   ],
   "imageRequirements": {
     "required": [],

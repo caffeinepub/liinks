@@ -14,6 +14,7 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export type OtpCode = string;
 export type Category = string;
 export type Time = bigint;
 export type TemplateId = string;
@@ -38,6 +39,7 @@ export interface Template {
     description: string;
     category: Category;
 }
+export type PhoneNumber = string;
 export type UserId = Principal;
 export type LinkId = string;
 export type SocialHandleId = string;
@@ -87,12 +89,16 @@ export interface backendInterface {
     getSharedBio(shareId: ShareId): Promise<BioPage | null>;
     getTemplatesByCategory(category: Category): Promise<Array<Template>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getVerifiedPhoneNumbers(): Promise<Array<string>>;
     hasActiveSubscription(): Promise<boolean>;
     initiateSubscription(tier: SubscriptionTier, duration: Time, paymentReference: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
+    isPhoneVerified(): Promise<boolean>;
     isRegistered(): Promise<boolean>;
     registerProfile(firstName: string, lastName: string, email: string, phoneNumber: string): Promise<void>;
+    requestOtp(phoneNumber: PhoneNumber, otpCode: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveFamousInfluencer(category: Category, profile: UserProfile): Promise<void>;
     uploadTemplate(name: string, category: Category, description: string, thumbnail: ExternalBlob, editableContent: Uint8Array): Promise<TemplateId>;
+    verifyPhoneNumber(phoneNumber: PhoneNumber, otpCode: OtpCode): Promise<void>;
 }

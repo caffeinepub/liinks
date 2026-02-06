@@ -1,52 +1,25 @@
 import Map "mo:core/Map";
 import Principal "mo:core/Principal";
-import Time "mo:core/Time";
 
 module {
-  // Types
-  type UserId = Principal;
-  type SubscriptionTier = { #premium; #pro };
+  type PhoneNumber = Text;
+  type OtpCode = Text;
+  type OtpId = Text;
 
-  type UserProfile = {
-    userId : UserId;
-    firstName : Text;
-    lastName : Text;
-    email : Text;
-    phoneNumber : Text;
-    subscription : ?SubscriptionTier;
-    subscriptionExpiry : ?Time.Time;
+  public type OtpRequest = {
+    phoneNumber : PhoneNumber;
+    otpCode : OtpCode;
+    createdTime : Int;
+    verified : Bool;
   };
 
-  type OldActor = {
-    userProfiles : Map.Map<UserId, UserProfile>;
-  };
-
-  type SubscriptionRecord = {
-    tier : SubscriptionTier;
-    duration : Time.Time;
-    paymentReference : Text;
-    confirmedAt : Time.Time;
-  };
-
-  type TemporarySubscription = {
-    userId : UserId;
-    tier : SubscriptionTier;
-    duration : Time.Time;
-    paymentReference : Text;
-    initiatedAt : Time.Time;
-  };
-
+  // Only new addition
   type NewActor = {
-    userProfiles : Map.Map<UserId, UserProfile>;
-    pendingSubscriptions : Map.Map<UserId, TemporarySubscription>;
-    confirmedSubscriptions : Map.Map<UserId, SubscriptionRecord>;
+    activeOtps : Map.Map<OtpId, OtpRequest>;
   };
 
-  public func run(old : OldActor) : NewActor {
-    {
-      old with
-      pendingSubscriptions = Map.empty<UserId, TemporarySubscription>();
-      confirmedSubscriptions = Map.empty<UserId, SubscriptionRecord>();
-    };
+  // Add default-initialized new store
+  public func run(old : {}) : NewActor {
+    { activeOtps = Map.empty<OtpId, OtpRequest>() };
   };
 };

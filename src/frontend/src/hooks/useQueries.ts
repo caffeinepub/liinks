@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { UserProfile, Template, Category, SubscriptionTier, SocialHandle, Link, TemplateId, BioPage, ShareId } from '../backend';
+import type { UserProfile, Template, Category, SubscriptionTier, SocialHandle, Link, TemplateId, BioPage, ShareId, PhoneNumber, OtpCode } from '../backend';
 import { ExternalBlob } from '../backend';
 import { SEED_TEMPLATES } from '../data/seedTemplates';
 
@@ -11,10 +11,23 @@ export function useGetCallerUserProfile() {
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getCallerUserProfile();
+      try {
+        return await actor.getCallerUserProfile();
+      } catch (error: any) {
+        // If the error is about profile not found or unauthorized, return null
+        // This allows the UI to detect the need for registration
+        if (error.message?.includes('Profile not found') || 
+            error.message?.includes('Unauthorized') ||
+            error.message?.includes('register')) {
+          return null;
+        }
+        // Re-throw other errors
+        throw error;
+      }
     },
     enabled: !!actor && !actorFetching,
     retry: false,
+    staleTime: 0, // Always fetch fresh to detect registration status
   });
 
   return {
@@ -22,6 +35,45 @@ export function useGetCallerUserProfile() {
     isLoading: actorFetching || query.isLoading,
     isFetched: !!actor && query.isFetched,
   };
+}
+
+export function useRequestOtp() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async (data: { phoneNumber: PhoneNumber; otpCode: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.requestOtp(data.phoneNumber, data.otpCode);
+    },
+  });
+}
+
+export function useVerifyOtp() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { phoneNumber: PhoneNumber; otpCode: OtpCode }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.verifyPhoneNumber(data.phoneNumber, data.otpCode);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['phoneVerification'] });
+    },
+  });
+}
+
+export function useIsPhoneVerified() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['phoneVerification', 'status'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isPhoneVerified();
+    },
+    enabled: !!actor && !isFetching,
+  });
 }
 
 export function useRegisterProfile() {
@@ -148,6 +200,10 @@ export function useCreateBioPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bioPages'] });
     },
+    onError: (error: any) => {
+      // Log error for debugging but let it propagate to the UI
+      console.error('Failed to create bio page:', error);
+    },
   });
 }
 
@@ -195,6 +251,5 @@ export function useGetSharedBio(shareId: ShareId) {
       return actor.getSharedBio(shareId);
     },
     enabled: !!actor && !isFetching && !!shareId,
-    retry: false,
   });
 }

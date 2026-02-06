@@ -36,6 +36,10 @@ export default function BrandHeader() {
 
   const isPro = userProfile?.subscription === 'pro';
 
+  const handleOpenCanva = () => {
+    window.open('https://www.canva.com/', '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-sm">
       <div className="container mx-auto px-4">
@@ -69,6 +73,18 @@ export default function BrandHeader() {
             >
               Pricing
             </Link>
+            <Link
+              to="/about"
+              className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-md transition-all duration-200"
+            >
+              About
+            </Link>
+            <button
+              onClick={handleOpenCanva}
+              className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-accent/50 rounded-md transition-all duration-200"
+            >
+              Canva
+            </button>
             {isAuthenticated && userProfile && isPro && (
               <Link
                 to="/upload"
@@ -113,6 +129,22 @@ export default function BrandHeader() {
                   >
                     Pricing
                   </Link>
+                  <Link
+                    to="/about"
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2 px-3 rounded-md hover:bg-accent/50"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    About
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleOpenCanva();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2 px-3 rounded-md hover:bg-accent/50 text-left"
+                  >
+                    Canva
+                  </button>
                   {isAuthenticated && userProfile && isPro && (
                     <Link
                       to="/upload"

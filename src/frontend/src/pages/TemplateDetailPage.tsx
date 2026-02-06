@@ -4,7 +4,7 @@ import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Sparkles, Eye, LogIn, ExternalLink, Wand2 } from 'lucide-react';
+import { Sparkles, Eye, LogIn, ExternalLink, Wand2, Copy, Palette } from 'lucide-react';
 import { Skeleton } from '../components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import { getInfluencersByCategory } from '../data/topInfluencers';
@@ -12,6 +12,8 @@ import { SiInstagram } from 'react-icons/si';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
+import { generateBioSuggestion } from '../utils/bioAssistant';
+import { copyToClipboard } from '../utils/upi';
 
 export default function TemplateDetailPage() {
   const { templateId } = useParams({ from: '/templates/$templateId' });
@@ -19,8 +21,8 @@ export default function TemplateDetailPage() {
   const { identity } = useInternetIdentity();
   const navigate = useNavigate();
 
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
+  const [bioPrompt, setBioPrompt] = useState('');
+  const [bioSuggestion, setBioSuggestion] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const template = templates?.find((t) => t.id === templateId);
@@ -62,60 +64,51 @@ export default function TemplateDetailPage() {
     };
   }, []);
 
-  const handleGenerateWithAI = async () => {
-    if (!aiPrompt.trim()) {
-      toast.error('Please enter a prompt for AI generation');
+  const handleGenerateBio = () => {
+    if (!bioPrompt.trim()) {
+      toast.error('Please describe what you want in your bio');
+      return;
+    }
+
+    if (!template) {
+      toast.error('Template not found');
       return;
     }
 
     setIsGenerating(true);
-    setAiResponse('');
+    setBioSuggestion('');
 
-    try {
-      const apiKey = localStorage.getItem('openai_api_key');
-      if (!apiKey) {
-        toast.error('Please set your OpenAI API key in settings');
+    // Simulate a brief processing time for better UX
+    setTimeout(() => {
+      try {
+        const suggestion = generateBioSuggestion({
+          prompt: bioPrompt,
+          category: template.category,
+        });
+        setBioSuggestion(suggestion);
+        toast.success('Bio suggestion generated!');
+      } catch (error) {
+        console.error('Bio generation error:', error);
+        toast.error('Failed to generate bio suggestion. Please try again.');
+      } finally {
         setIsGenerating(false);
-        return;
       }
+    }, 800);
+  };
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a creative bio designer for ${template?.category} influencers. Generate engaging, professional bio content based on the user's request. Keep it concise and impactful.`,
-            },
-            {
-              role: 'user',
-              content: aiPrompt,
-            },
-          ],
-          temperature: 0.8,
-          max_tokens: 500,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate AI content');
-      }
-
-      const data = await response.json();
-      const generatedText = data.choices[0]?.message?.content || '';
-      setAiResponse(generatedText);
-      toast.success('AI content generated successfully!');
-    } catch (error) {
-      console.error('AI generation error:', error);
-      toast.error('Failed to generate AI content. Please check your API key.');
-    } finally {
-      setIsGenerating(false);
+  const handleCopyBio = async () => {
+    if (!bioSuggestion) return;
+    
+    const success = await copyToClipboard(bioSuggestion);
+    if (success) {
+      toast.success('Bio copied to clipboard!');
+    } else {
+      toast.error('Failed to copy bio. Please try again.');
     }
+  };
+
+  const handleOpenCanva = () => {
+    window.open('https://www.canva.com/', '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) {
@@ -186,6 +179,28 @@ export default function TemplateDetailPage() {
           </div>
         </Card>
 
+        <Card className="border-primary/20 bg-gradient-to-br from-card to-accent/10">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5 text-primary" />
+              Design with Canva
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Create stunning graphics, banners, and visuals in Canva. Once you're done, return to Liinks to continue editing your bio page and add your custom designs.
+            </p>
+            <Button
+              onClick={handleOpenCanva}
+              variant="outline"
+              className="w-full"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open Canva in New Tab
+            </Button>
+          </CardContent>
+        </Card>
+
         {influencers.length > 0 && (
           <Card className="border-primary/20">
             <CardHeader>
@@ -223,24 +238,24 @@ export default function TemplateDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Wand2 className="h-5 w-5 text-primary" />
-              AI-Powered Design Assistant
+              Bio Inspiration Assistant
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="ai-prompt">Describe what you want to create</Label>
+              <Label htmlFor="bio-prompt">Describe your style and focus</Label>
               <Textarea
-                id="ai-prompt"
-                placeholder={`Example: Create a bio for a ${template.category.toLowerCase()} influencer who focuses on sustainable fashion and has 50k followers...`}
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
+                id="bio-prompt"
+                placeholder={`Example: I'm a ${template.category.toLowerCase()} creator who focuses on sustainable practices and has a minimalist aesthetic...`}
+                value={bioPrompt}
+                onChange={(e) => setBioPrompt(e.target.value)}
                 rows={4}
                 className="resize-none"
               />
             </div>
             <Button
-              onClick={handleGenerateWithAI}
-              disabled={isGenerating || !aiPrompt.trim()}
+              onClick={handleGenerateBio}
+              disabled={isGenerating || !bioPrompt.trim()}
               className="w-full"
             >
               {isGenerating ? (
@@ -251,18 +266,28 @@ export default function TemplateDetailPage() {
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Generate with AI
+                  Get Bio Inspiration
                 </>
               )}
             </Button>
-            {aiResponse && (
-              <div className="mt-4 p-4 rounded-lg bg-muted/50 border border-border">
-                <p className="text-sm font-medium mb-2">AI Generated Content:</p>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{aiResponse}</p>
+            {bioSuggestion && (
+              <div className="mt-4 space-y-3">
+                <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                  <p className="text-sm font-medium mb-2">Suggested Bio:</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{bioSuggestion}</p>
+                </div>
+                <Button
+                  onClick={handleCopyBio}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy to Clipboard
+                </Button>
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              Note: You need to set your OpenAI API key in localStorage with key 'openai_api_key' to use this feature.
+              This assistant generates bio suggestions based on your input. Customize the suggestion to make it uniquely yours!
             </p>
           </CardContent>
         </Card>

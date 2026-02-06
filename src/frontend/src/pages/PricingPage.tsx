@@ -6,6 +6,7 @@ import { Check, Sparkles, Crown, AlertCircle } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { SubscriptionTier } from '../backend';
+import { PREMIUM_BENEFITS, getProDisplayBenefits } from '../constants/subscriptionBenefits';
 
 export default function PricingPage() {
   const { data: userProfile } = useGetCallerUserProfile();
@@ -19,23 +20,8 @@ export default function PricingPage() {
     navigate({ to: '/checkout/$tier', params: { tier } });
   };
 
-  const premiumFeatures = [
-    'Access to all premium templates',
-    'Copy and customize templates',
-    'Create unlimited bio pages',
-    'Custom social handles',
-    'Custom links',
-    'Share your bio pages',
-  ];
-
-  const proFeatures = [
-    'Everything in Premium',
-    'Upload your own templates',
-    'Earn from template sales',
-    'Priority support',
-    'Early access to new features',
-    'Pro badge on profile',
-  ];
+  const premiumFeatures = PREMIUM_BENEFITS.map((b) => b.text);
+  const proFeatures = getProDisplayBenefits();
 
   return (
     <div className="container mx-auto px-4 py-12">

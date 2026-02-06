@@ -82,6 +82,8 @@ export const BioPage = IDL.Record({
   'updatedAt' : Time,
   'socialHandles' : IDL.Vec(SocialHandle),
 });
+export const PhoneNumber = IDL.Text;
+export const OtpCode = IDL.Text;
 
 export const idlService = IDL.Service({
   '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -137,15 +139,18 @@ export const idlService = IDL.Service({
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'getVerifiedPhoneNumbers' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'hasActiveSubscription' : IDL.Func([], [IDL.Bool], ['query']),
   'initiateSubscription' : IDL.Func([SubscriptionTier, Time, IDL.Text], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'isPhoneVerified' : IDL.Func([], [IDL.Bool], ['query']),
   'isRegistered' : IDL.Func([], [IDL.Bool], ['query']),
   'registerProfile' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
       [],
       [],
     ),
+  'requestOtp' : IDL.Func([PhoneNumber, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'saveFamousInfluencer' : IDL.Func([Category, UserProfile], [], []),
   'uploadTemplate' : IDL.Func(
@@ -153,6 +158,7 @@ export const idlService = IDL.Service({
       [TemplateId],
       [],
     ),
+  'verifyPhoneNumber' : IDL.Func([PhoneNumber, OtpCode], [], []),
 });
 
 export const idlInitArgs = [];
@@ -232,6 +238,8 @@ export const idlFactory = ({ IDL }) => {
     'updatedAt' : Time,
     'socialHandles' : IDL.Vec(SocialHandle),
   });
+  const PhoneNumber = IDL.Text;
+  const OtpCode = IDL.Text;
   
   return IDL.Service({
     '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -287,6 +295,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'getVerifiedPhoneNumbers' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'hasActiveSubscription' : IDL.Func([], [IDL.Bool], ['query']),
     'initiateSubscription' : IDL.Func(
         [SubscriptionTier, Time, IDL.Text],
@@ -294,12 +303,14 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'isPhoneVerified' : IDL.Func([], [IDL.Bool], ['query']),
     'isRegistered' : IDL.Func([], [IDL.Bool], ['query']),
     'registerProfile' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [],
         [],
       ),
+    'requestOtp' : IDL.Func([PhoneNumber, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'saveFamousInfluencer' : IDL.Func([Category, UserProfile], [], []),
     'uploadTemplate' : IDL.Func(
@@ -307,6 +318,7 @@ export const idlFactory = ({ IDL }) => {
         [TemplateId],
         [],
       ),
+    'verifyPhoneNumber' : IDL.Func([PhoneNumber, OtpCode], [], []),
   });
 };
 

@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-explicit-payment-method-options-in-the-checkout-ui-for-inr-subscriptions-razorpay-google-pay-gpay-and-phonepe-the-page-must-present-these-as-clear-selectable-options-and-guide-the-user-through-completing-payment-for-the-selected-tier-amount",
-      "featureTitle": "Add explicit payment method options in the Checkout UI for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe. The page must present these as clear selectable options and guide the user through completing payment for the selected tier amount.",
+      "featureId": "feature-add-frontend-ui-flow-to-verify-a-phone-number-via-otp-before-completing-signup-update-the-signup-page-to-include-an-otp-request-otp-entry-step-and-only-allow-profile-creation-after-successful-otp-verification",
+      "featureTitle": "Add frontend UI flow to verify a phone number via OTP before completing signup: update the Signup page to include an OTP request + OTP entry step and only allow profile creation after successful OTP verification.",
       "files": [
-        "frontend/src/pages/CheckoutPage.tsx"
+        "frontend/src/components/PhoneOtpGate.tsx",
+        "frontend/src/pages/SignupPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,16 +18,17 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-6"
+        "REQ-23"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-upi-intent-deep-link-support-for-google-pay-gpay-and-phonepe-on-the-checkout-page-using-the-configured-receiver-upi-id-and-the-correct-plan-amount-so-that-tapping-the-button-opens-the-corresponding-upi-app-when-available-and-gracefully-falls-back-to-copy-to-clipboard-if-not",
-      "featureTitle": "Implement UPI intent/deep-link support for Google Pay (GPay) and PhonePe on the Checkout page using the configured receiver UPI ID and the correct plan amount, so that tapping the button opens the corresponding UPI app when available (and gracefully falls back to copy-to-clipboard if not).",
+      "featureId": "feature-add-a-dedicated-phone-verification-route-and-guard-when-an-authenticated-user-is-redirected-to-signup-due-to-registration-required-ensure-the-app-can-route-them-into-a-phone-verification-step-first-or-show-the-verification-step-inline-so-users-are-not-blocked-from-completing-registration",
+      "featureTitle": "Add a dedicated phone verification route and guard: when an authenticated user is redirected to /signup due to registration-required, ensure the app can route them into a phone verification step first (or show the verification step inline) so users are not blocked from completing registration.",
       "files": [
-        "frontend/src/pages/CheckoutPage.tsx",
-        "frontend/src/utils/upi.ts"
+        "frontend/src/App.tsx",
+        "frontend/src/pages/PhoneVerificationPage.tsx",
+        "frontend/src/pages/SignupPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,16 +40,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-7"
+        "REQ-24"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-capture-the-user-s-payment-reference-transaction-id-during-confirmation-and-persist-it-in-the-backend-as-part-of-the-subscription-activation-record-so-support-can-audit-what-the-user-entered-update-the-api-surface-as-needed-and-keep-the-frontend-confirmation-form-wired-to-the-backend-call",
-      "featureTitle": "Capture the user’s payment reference / transaction ID during confirmation and persist it in the backend as part of the subscription activation record (so support can audit what the user entered). Update the API surface as needed and keep the frontend confirmation form wired to the backend call.",
+      "featureId": "feature-wire-new-frontend-react-query-hooks-for-otp-operations-to-the-backend-actor-so-otp-request-verify-flows-call-the-canister-and-update-ui-state-cleanly",
+      "featureTitle": "Wire new frontend React Query hooks for OTP operations to the backend actor so OTP request/verify flows call the canister and update UI state cleanly.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/CheckoutPage.tsx"
+        "frontend/src/components/PhoneOtpGate.tsx",
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -59,7 +61,27 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-8"
+        "REQ-25"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-clear-in-app-fallback-message-explaining-otp-delivery-limitations-if-sms-delivery-is-not-available-when-an-otp-is-requested-the-ui-must-display-an-english-message-indicating-how-the-user-can-obtain-the-otp-in-the-current-environment-e-g-shown-in-app-dev-mode-rather-than-implying-an-sms-was-sent",
+      "featureTitle": "Add a clear in-app fallback message explaining OTP delivery limitations if SMS delivery is not available: when an OTP is requested, the UI must display an English message indicating how the user can obtain the OTP in the current environment (e.g., shown in-app/dev mode) rather than implying an SMS was sent.",
+      "files": [
+        "frontend/src/components/PhoneOtpGate.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-26"
       ],
       "confidence": "high"
     }
