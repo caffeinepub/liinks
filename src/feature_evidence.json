@@ -2,11 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-frontend-ui-flow-to-verify-a-phone-number-via-otp-before-completing-signup-update-the-signup-page-to-include-an-otp-request-otp-entry-step-and-only-allow-profile-creation-after-successful-otp-verification",
-      "featureTitle": "Add frontend UI flow to verify a phone number via OTP before completing signup: update the Signup page to include an OTP request + OTP entry step and only allow profile creation after successful OTP verification.",
+      "featureId": "feature-improve-frontend-error-handling-for-signup-registration-so-that-if-any-backend-authorization-role-assignment-error-occurs-the-ui-shows-a-clear-english-error-message-and-provides-a-next-step-e-g-retry-registration-verify-phone-or-contact-admin-instead-of-appearing-to-do-nothing",
+      "featureTitle": "Improve frontend error handling for signup/registration so that if any backend authorization/role assignment error occurs, the UI shows a clear English error message and provides a next step (e.g., retry registration, verify phone, or contact admin) instead of appearing to do nothing.",
       "files": [
-        "frontend/src/components/PhoneOtpGate.tsx",
-        "frontend/src/pages/SignupPage.tsx"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/SignupPage.tsx",
+        "frontend/src/utils/backendErrors.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,17 +19,17 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-23"
+        "REQ-2"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-dedicated-phone-verification-route-and-guard-when-an-authenticated-user-is-redirected-to-signup-due-to-registration-required-ensure-the-app-can-route-them-into-a-phone-verification-step-first-or-show-the-verification-step-inline-so-users-are-not-blocked-from-completing-registration",
-      "featureTitle": "Add a dedicated phone verification route and guard: when an authenticated user is redirected to /signup due to registration-required, ensure the app can route them into a phone verification step first (or show the verification step inline) so users are not blocked from completing registration.",
+      "featureId": "feature-ensure-the-create-share-save-share-bio-page-flow-fails-loudly-with-actionable-messages-when-prerequisites-are-missing-not-logged-in-not-registered-phone-not-verified-rather-than-silently-failing",
+      "featureTitle": "Ensure the Create & Share (Save & Share Bio Page) flow fails loudly with actionable messages when prerequisites are missing (not logged in, not registered, phone not verified) rather than silently failing.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/PhoneVerificationPage.tsx",
-        "frontend/src/pages/SignupPage.tsx"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/TemplateEditorPage.tsx",
+        "frontend/src/utils/backendErrors.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -40,48 +41,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-24"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-wire-new-frontend-react-query-hooks-for-otp-operations-to-the-backend-actor-so-otp-request-verify-flows-call-the-canister-and-update-ui-state-cleanly",
-      "featureTitle": "Wire new frontend React Query hooks for OTP operations to the backend actor so OTP request/verify flows call the canister and update UI state cleanly.",
-      "files": [
-        "frontend/src/components/PhoneOtpGate.tsx",
-        "frontend/src/hooks/useQueries.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-25"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-clear-in-app-fallback-message-explaining-otp-delivery-limitations-if-sms-delivery-is-not-available-when-an-otp-is-requested-the-ui-must-display-an-english-message-indicating-how-the-user-can-obtain-the-otp-in-the-current-environment-e-g-shown-in-app-dev-mode-rather-than-implying-an-sms-was-sent",
-      "featureTitle": "Add a clear in-app fallback message explaining OTP delivery limitations if SMS delivery is not available: when an OTP is requested, the UI must display an English message indicating how the user can obtain the OTP in the current environment (e.g., shown in-app/dev mode) rather than implying an SMS was sent.",
-      "files": [
-        "frontend/src/components/PhoneOtpGate.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-26"
+        "REQ-3"
       ],
       "confidence": "high"
     }

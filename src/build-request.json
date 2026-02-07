@@ -1,131 +1,86 @@
 {
   "kind": "build_request",
-  "title": "Add phone-number OTP verification gate for signup and app access (no email verification)",
-  "priority": "normal",
+  "title": "Fix 'Only admins can assign user role' blocking registration and Create & Share flow",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-21",
-      "text": "Implement backend support for phone-number OTP verification tied to the authenticated Internet Identity principal: (1) request an OTP for a provided phone number, (2) verify the OTP, and (3) query whether the caller’s phone number is verified.",
+      "id": "REQ-1",
+      "text": "Fix the backend registration flow so newly registered users are not blocked by the error \"Only admins can assign user role\" when assigning the default user role after signup.",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "dont enabled the email id verify the phone number using otp verification for login and signup"
+          "its not working its saying only admins can assign user role"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes new canister methods to request and verify OTP and to read verification status for the caller.",
-        "OTP verification state is stored per caller principal (not globally) and survives within the canister’s in-memory state for the session (consistent with existing Map-based state usage).",
-        "Requesting a new OTP invalidates any previously issued OTP for that caller/phone combination.",
-        "OTP verification has an expiry window (e.g., a short TTL) enforced by the backend; expired OTPs are rejected.",
-        "Backend methods return clear errors (trap messages) for invalid OTP, expired OTP, and missing OTP request."
+        "Calling backend registerProfile as a non-admin principal succeeds when the phone number is verified and the user is not already registered.",
+        "After registerProfile succeeds, the caller has the expected default role (e.g., #user) without requiring any admin privileges.",
+        "The backend no longer traps with any message containing \"Only admins can assign user role\" during normal signup/registration flows.",
+        "No state migration is introduced unless strictly required by a state shape change (avoid migration for logic-only changes)."
       ]
     },
     {
-      "id": "REQ-22",
-      "text": "Enforce phone verification in the backend for profile registration and registered-user flows: require that the caller has a verified phone number before allowing `registerProfile`, and ensure that endpoints that assume a registered user provide a clear error when the caller is not verified/registered.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "verify the phone number using otp verification for login and signup"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Calling `registerProfile(...)` without a verified phone number fails with a clear error message instructing the user to verify their phone number first.",
-        "If the caller is authenticated but not phone-verified, backend returns a deterministic error message (not a generic trap) when attempting gated actions that require verified registration.",
-        "Existing behavior for already-registered users remains unchanged except for the added requirement that registration cannot happen until phone is verified."
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "text": "Add frontend UI flow to verify a phone number via OTP before completing signup: update the Signup page to include an OTP request + OTP entry step and only allow profile creation after successful OTP verification.",
+      "id": "REQ-2",
+      "text": "Improve frontend error handling for signup/registration so that if any backend authorization/role assignment error occurs, the UI shows a clear English error message and provides a next step (e.g., retry registration, verify phone, or contact admin) instead of appearing to do nothing.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "verify the phone number using otp verification for login and signup"
+          "its not working its saying only admins can assign user role"
         ]
       },
       "acceptanceCriteria": [
-        "Signup page collects phone number, lets the user request an OTP, then prompts for OTP input and verifies it before enabling the existing profile form submission.",
-        "After OTP verification succeeds, the user can complete the existing signup fields and submit registration successfully.",
-        "User-facing text is in English and clearly explains the steps (enter phone → request OTP → enter OTP → continue).",
-        "Error states are handled with clear messages (invalid OTP, expired OTP, too many attempts if implemented, etc.)."
+        "When registerProfile fails, the UI displays a visible error message in English (toast and/or inline) that includes the backend error text when available.",
+        "If the failure message contains admin/role assignment wording, the UI shows a friendly message indicating this is a configuration issue and suggests retrying later or contacting an admin (without exposing internal stack traces).",
+        "The signup page does not get stuck in a loading state after a failed registration attempt; the user can edit inputs and retry."
       ]
     },
     {
-      "id": "REQ-24",
-      "text": "Add a dedicated phone verification route and guard: when an authenticated user is redirected to /signup due to registration-required, ensure the app can route them into a phone verification step first (or show the verification step inline) so users are not blocked from completing registration.",
+      "id": "REQ-3",
+      "text": "Ensure the Create & Share (Save & Share Bio Page) flow fails loudly with actionable messages when prerequisites are missing (not logged in, not registered, phone not verified) rather than silently failing.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "verify the phone number using otp verification for login and signup"
+          "its not working its saying only admins can assign user role"
         ]
       },
       "acceptanceCriteria": [
-        "A user who is authenticated (Internet Identity) but not registered can complete phone OTP verification and then complete profile registration without getting stuck in redirects.",
-        "The routing/guard behavior remains consistent with the existing `RequireAuth` / `RequireRegistered` pattern in `frontend/src/App.tsx`."
-      ]
-    },
-    {
-      "id": "REQ-25",
-      "text": "Wire new frontend React Query hooks for OTP operations to the backend actor so OTP request/verify flows call the canister and update UI state cleanly.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "verify the phone number using otp verification for login and signup"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`frontend/src/hooks/useQueries.ts` (or equivalent hook location) includes mutations/queries to request OTP, verify OTP, and check verification status using the backend actor.",
-        "OTP mutations have success/error handling suitable for the Signup UI (e.g., enabling next step on success).",
-        "No changes are made to immutable hook files listed in `frontend.immutablePaths`."
-      ]
-    },
-    {
-      "id": "REQ-26",
-      "text": "Add a clear in-app fallback message explaining OTP delivery limitations if SMS delivery is not available: when an OTP is requested, the UI must display an English message indicating how the user can obtain the OTP in the current environment (e.g., shown in-app/dev mode) rather than implying an SMS was sent.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "verify the phone number using otp verification for login and signup"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The app does not claim that an SMS was sent if there is no SMS integration.",
-        "The user sees clear instructions on how to proceed with OTP in the current build environment (English copy)."
+        "If the user is not authenticated, the editor blocks saving and shows an English message instructing the user to log in.",
+        "If the backend rejects createBioPage due to missing profile/registration, the UI shows an English message instructing the user to complete signup, and offers navigation to /signup (or indicates where to go) instead of only logging to console.",
+        "If the backend rejects due to phone not verified, the UI shows an English message instructing the user to verify their phone, and offers navigation to /verify-phone (or indicates where to go)."
       ]
     }
   ],
   "constraints": [
-    "Do not implement or require third-party SMS/email providers (no Twilio/WhatsApp/SendGrid/SMTP).",
-    "Keep all backend logic in the single Motoko actor at `backend/main.mo` (single-actor architecture).",
-    "Do not edit any paths listed under `frontend.immutablePaths` in SYSTEM_CONTEXT.",
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files in frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, and anything under frontend/src/components/ui.",
     "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Email-based signup verification or welcome emails.",
-    "Password-based authentication (the app continues to use Internet Identity for authentication).",
-    "Real SMS delivery integration (provider hookup) in this build."
+    "Do not grant or simulate external Pro/Premium subscriptions for third-party platforms (e.g., Liinks) or attempt to verify/claim ownership of external accounts.",
+    "Do not add third-party authentication providers beyond Internet Identity.",
+    "Do not add new backend persistence layers or external databases."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

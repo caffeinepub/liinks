@@ -1,93 +1,57 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Phone-number OTP verification gate for signup and registered access (frontend-only)",
+  "title": "Improve signup + Create & Share error handling and prerequisite messaging",
   "requirements": [
     {
-      "id": "REQ-23",
-      "summary": "Update Signup page to require phone-number OTP verification before enabling profile registration submission.",
+      "id": "REQ-2",
+      "summary": "Show clear, actionable English errors on signup when registration fails (including role/authorization failures) and ensure the UI is never stuck loading.",
       "acceptanceCriteria": [
-        "Signup page collects phone number, lets the user request an OTP, then prompts for OTP input and verifies it before enabling the existing profile form submission.",
-        "After OTP verification succeeds, the user can complete the existing signup fields and submit registration successfully.",
-        "User-facing text is in English and clearly explains the steps (enter phone → request OTP → enter OTP → continue).",
-        "Error states are handled with clear messages (invalid OTP, expired OTP, too many attempts if implemented, etc.)."
+        "When registerProfile fails, the UI displays a visible error message in English (toast and/or inline) that includes the backend error text when available.",
+        "If the failure message contains admin/role assignment wording, the UI shows a friendly message indicating this is a configuration issue and suggests retrying later or contacting an admin (without exposing internal stack traces).",
+        "The signup page does not get stuck in a loading state after a failed registration attempt; the user can edit inputs and retry."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/SignupPage.tsx",
-          "operation": "modify",
-          "description": "Refactor the signup flow into a phone-verification-first, multi-step UI: (1) phone input + request OTP, (2) OTP entry + verify, (3) existing profile fields + submit. Disable profile submission until verification succeeds; show clear English step guidance and handle backend errors (invalid/expired/missing OTP) with user-friendly messages. Ensure the email field remains a normal profile field (no email verification)."
-        },
-        {
-          "path": "frontend/src/components/PhoneOtpGate.tsx",
+          "path": "frontend/src/utils/backendErrors.ts",
           "operation": "create",
-          "description": "Create a reusable Phone OTP gate component used by Signup and the dedicated verification route. It should manage: phone input, request-OTP action, OTP input, verify action, step transitions, and a success state that notifies the parent when verified."
-        }
-      ]
-    },
-    {
-      "id": "REQ-24",
-      "summary": "Add a dedicated /verify-phone route and adjust registration-required guard behavior so authenticated-but-unregistered users can complete phone verification and then registration without redirect loops.",
-      "acceptanceCriteria": [
-        "A user who is authenticated (Internet Identity) but not registered can complete phone OTP verification and then complete profile registration without getting stuck in redirects.",
-        "The routing/guard behavior remains consistent with the existing `RequireAuth` / `RequireRegistered` pattern in `frontend/src/App.tsx`."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/PhoneVerificationPage.tsx",
-          "operation": "create",
-          "description": "Add a dedicated phone verification page that renders the shared PhoneOtpGate component. After successful verification, guide the user to continue to profile registration (navigate to /signup with a clear reason parameter for messaging)."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register a new authenticated route for /verify-phone (wrapped in RequireAuth) and wire it into the router tree. Update the existing registration-required redirect flow (RequireRegistered → redirect) to avoid trapping users: when profile is missing, redirect users to /verify-phone (or to /signup with a verification step) in a deterministic way that allows proceeding to registration afterwards."
+          "description": "Add a small shared helper to normalize backend errors into safe, user-friendly English messages (e.g., detect role/admin/authorization wording like \"Only admins can assign user role\" and map to actionable guidance) while preserving the raw backend error text when appropriate. Use this to support graceful handling of authorization traps as recommended by the authorization component. Verify the component's usage instructions before implementing."
         },
         {
           "path": "frontend/src/pages/SignupPage.tsx",
           "operation": "modify",
-          "description": "Ensure /signup can accept navigation from /verify-phone and does not cause redirect loops: if arriving after verification, skip/mark the phone OTP step as complete and allow profile submission; keep the existing reason-based guidance messaging in English."
+          "description": "Improve registerProfile failure handling: use the new backend error normalization helper to show a clear toast plus an inline Alert with next steps (retry, verify phone, contact admin when role/admin wording is detected). Ensure local error state is set/cleared appropriately and the form remains editable after failure (no stuck pending UI)."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Ensure registerProfile mutation errors propagate consistently with useful error messages (no swallowed errors) so SignupPage can display the backend error text when available; keep behavior aligned with authorization-style trap errors."
         }
       ]
     },
     {
-      "id": "REQ-25",
-      "summary": "Add React Query hooks for OTP request/verify/status and wire them to the backend actor for clean UI state updates.",
+      "id": "REQ-3",
+      "summary": "Make Create & Share (Save & Share Bio Page) loudly block and guide users when prerequisites are missing (not logged in, not registered, phone not verified).",
       "acceptanceCriteria": [
-        "`frontend/src/hooks/useQueries.ts` (or equivalent hook location) includes mutations/queries to request OTP, verify OTP, and check verification status using the backend actor.",
-        "OTP mutations have success/error handling suitable for the Signup UI (e.g., enabling next step on success).",
-        "No changes are made to immutable hook files listed in `frontend.immutablePaths`."
+        "If the user is not authenticated, the editor blocks saving and shows an English message instructing the user to log in.",
+        "If the backend rejects createBioPage due to missing profile/registration, the UI shows an English message instructing the user to complete signup, and offers navigation to /signup (or indicates where to go) instead of only logging to console.",
+        "If the backend rejects due to phone not verified, the UI shows an English message instructing the user to verify their phone, and offers navigation to /verify-phone (or indicates where to go)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add hooks for OTP operations using the existing actor + React Query patterns: (1) mutation to request OTP, (2) mutation to verify OTP, and (3) query to check verification status (isPhoneVerified). Ensure hooks expose error/success signals suitable for step transitions and invalidate/refresh the phone-verification status query on success."
+          "description": "Add lightweight React Query hooks for prerequisite checks used by the editor (e.g., isRegistered, isPhoneVerified) using existing backend capabilities, so TemplateEditorPage can block Save & Share before attempting createBioPage."
         },
         {
-          "path": "frontend/src/components/PhoneOtpGate.tsx",
+          "path": "frontend/src/pages/TemplateEditorPage.tsx",
           "operation": "modify",
-          "description": "Integrate the new OTP hooks into the shared component so UI actions call the canister through the actor and update UI state cleanly (loading, success, error)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-26",
-      "summary": "Show an explicit in-app OTP delivery limitation message (no SMS) and provide clear instructions for obtaining the OTP in this environment.",
-      "acceptanceCriteria": [
-        "The app does not claim that an SMS was sent if there is no SMS integration.",
-        "The user sees clear instructions on how to proceed with OTP in the current build environment (English copy)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/PhoneOtpGate.tsx",
-          "operation": "modify",
-          "description": "When OTP is requested, display a clear English message that this build does not send SMS and explain how to obtain the OTP. Implement a safe, explicit fallback for the current environment (e.g., show the generated OTP code in-app after requesting) without implying an SMS was sent."
+          "description": "Before calling createBioPage, explicitly check prerequisites (authenticated, registered, phone verified). If missing, block saving and show actionable English messaging with navigation to /signup or /verify-phone as appropriate. On backend rejection, use the shared backend error normalization helper to detect registration/phone/authorization failures and present loud, actionable guidance (toast and/or inline near the Save button), avoiding console-only failures. This aligns with authorization component guidance on handling trap-based authorization errors. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/utils/otp.ts",
-          "operation": "create",
-          "description": "Add a small utility for generating a user-enterable OTP code for this environment (e.g., numeric code). Use it to support the no-SMS flow so the UI can instruct users how to proceed without third-party providers."
+          "path": "frontend/src/utils/backendErrors.ts",
+          "operation": "modify",
+          "description": "Extend the backend error normalization helper to classify Create & Share failure cases (not registered/profile missing, phone not verified, authorization/role wording) and return recommended user actions (e.g., navigate to /signup or /verify-phone) with safe, English messages. Verify the component's usage instructions before implementing."
         }
       ]
     }

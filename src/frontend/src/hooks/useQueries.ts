@@ -37,6 +37,32 @@ export function useGetCallerUserProfile() {
   };
 }
 
+export function useIsRegistered() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['registration', 'status'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isRegistered();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useIsPhoneVerified() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['phoneVerification', 'status'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isPhoneVerified();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
 export function useRequestOtp() {
   const { actor } = useActor();
 
@@ -63,19 +89,6 @@ export function useVerifyOtp() {
   });
 }
 
-export function useIsPhoneVerified() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['phoneVerification', 'status'],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isPhoneVerified();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
 export function useRegisterProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -87,6 +100,11 @@ export function useRegisterProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['registration'] });
+    },
+    onError: (error: any) => {
+      // Propagate error with full message for UI handling
+      console.error('Registration failed:', error);
     },
   });
 }
@@ -201,7 +219,7 @@ export function useCreateBioPage() {
       queryClient.invalidateQueries({ queryKey: ['bioPages'] });
     },
     onError: (error: any) => {
-      // Log error for debugging but let it propagate to the UI
+      // Propagate error with full message for UI handling
       console.error('Failed to create bio page:', error);
     },
   });

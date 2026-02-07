@@ -1,62 +1,63 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T19:10:25.279Z",
-  "summary": "Frontend OTP gate UI, hooks, and routing were added (PhoneOtpGate component, Signup flow split into phone verification then profile, and a /verify-phone page). Backend state scaffolding for OTPs (activeOtps Map + migration) was added, but the diff summary does not show the required backend canister methods or the enforcement logic (TTL/expiry, invalidation, deterministic error messages, and gating registerProfile/other flows). Several unrelated UI/product changes also appear in the change summary.",
+  "generatedAt": "2026-02-07T09:04:57.281Z",
+  "summary": "Frontend changes add backend error normalization and more explicit prerequisite checks/messaging in Signup and Template Editor flows. However, the diff summary does not provide clear evidence that the backend role-assignment trap ('Only admins can assign user role') is actually fixed in registerProfile. Several unrelated UI/marketing/pricing/pro features appear added/modified beyond the request.",
   "missing_requirements": [
     {
-      "id": "REQ-21",
-      "requirement": "Backend exposes new canister methods to request an OTP, verify the OTP, and query whether the caller’s phone number is verified; OTPs are per-caller principal, invalidated on re-request, TTL enforced, and clear errors returned for invalid/expired/missing OTP.",
-      "reason": "The diff shows new OTP types and an activeOtps Map plus an OTP ID helper, but does not show the actual public canister methods, TTL/expiry enforcement, invalidation behavior, or the specified error handling in backend/main.mo (truncated before any OTP methods).",
+      "id": "REQ-1",
+      "requirement": "Fix the backend registration flow so newly registered users are not blocked by the error \"Only admins can assign user role\" when assigning the default user role after signup.",
+      "reason": "The backend file is truncated before showing registerProfile and any role-assignment logic; the diff summary does not explicitly show removal/relaxation of the admin-only role assignment check or how default role is assigned for non-admin callers. Therefore the required backend fix cannot be verified from the provided diff summary.",
       "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo"
-      ]
-    },
-    {
-      "id": "REQ-22",
-      "requirement": "Enforce phone verification for registerProfile and ensure gated endpoints return deterministic, clear error messages when the caller is authenticated but not phone-verified/registered.",
-      "reason": "Signup UI now requires phone verification before calling registerProfile, but the diff summary does not show backend enforcement inside registerProfile or other registered-user endpoints (backend/main.mo is truncated and contains no visible gating/error logic).",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/pages/SignupPage.tsx"
+        "backend/main.mo (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Changed OTP request API shape so the frontend provides the OTP code to the backend (requestOtp(phoneNumber, otpCode)), implying client-side OTP generation rather than backend-issued OTP.",
-      "reason": "The BuildRequest asks for backend support to “request an OTP” but does not request (or specify) an API where the client supplies the OTP to store; this is an extra/unrequested interface change.",
+      "description": "Added subscription-required error handling that navigates to /pricing and displays upgrade messaging.",
+      "reason": "BuildRequest explicitly lists non-goals around external subscriptions and does not request subscription-gating UI for these flows; adding pricing navigation/error mapping is outside REQ-1/2/3.",
       "evidence": [
-        "frontend/src/components/PhoneOtpGate.tsx",
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/utils/backendErrors.ts"
       ]
     },
     {
-      "description": "Large set of unrelated UI/copy/product changes (landing page marketing copy updates, template gallery/detail/editor changes, pricing/checkout copy and benefit lists, template card thumbnail removal, etc.).",
-      "reason": "The BuildRequest is specifically about adding a phone-number OTP verification gate for signup/app access; these additional feature/copy changes were not requested.",
+      "description": "Added/modified application routing and guards including a new /verify-phone route and RequireAuth/RequireRegistered guards (as described in summaries).",
+      "reason": "REQ-3 requires actionable messaging and navigation suggestions, but does not request new route creation/guard architecture changes; this appears to be additional scope.",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend-file-summaries.txt (frontend/src/App.tsx summary mentions new /verify-phone route and guards)"
       ]
     },
     {
-      "description": "Payment checkout and QR uploader behavior changes, plus Pro-only upload page fixes/behavior updates.",
-      "reason": "Not requested by the OTP verification build requirements.",
+      "description": "Large marketing and UI copy/layout updates across Landing, Template Gallery, Template Card, Template Detail, Pricing, and Checkout pages.",
+      "reason": "Not requested by REQ-1/2/3, which focus on registration/role error handling and Create & Share failure messaging.",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend-file-summaries.txt (LandingPage, TemplateGalleryPage, TemplateCard, TemplateDetailPage, PricingPage, CheckoutPage summaries)"
+      ]
+    },
+    {
+      "description": "Implemented/modified Pro-only template upload page and related Pro subscription checks.",
+      "reason": "Not requested; outside the registration/Create & Share error-handling scope.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/pages/UploadTemplatePage.tsx summary)"
+      ]
+    },
+    {
+      "description": "Added payment QR uploader functionality and related checkout flows.",
+      "reason": "Not requested by the BuildRequest; outside the stated requirements.",
+      "evidence": [
+        "frontend-file-summaries.txt (frontend/src/components/PaymentQrUploader.tsx summary, frontend/src/pages/CheckoutPage.tsx summary)"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.66,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/PhoneOtpGate.tsx",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/PhoneVerificationPage.tsx",
     "frontend/src/pages/SignupPage.tsx",
+    "frontend/src/pages/TemplateEditorPage.tsx",
+    "frontend/src/utils/backendErrors.ts",
     "project_state.json"
   ]
 }

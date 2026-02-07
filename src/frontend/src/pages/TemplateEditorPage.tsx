@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { useGetAllTemplates, useCreateBioPage } from '../hooks/useQueries';
+import { useGetAllTemplates, useCreateBioPage, useIsRegistered, useIsPhoneVerified } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -8,12 +8,14 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { toast } from 'sonner';
 import LinksEditor from '../components/LinksEditor';
 import SocialHandlesEditor from '../components/SocialHandlesEditor';
 import BioFormulaHelper from '../components/BioFormulaHelper';
-import { Copy, ExternalLink, Check, Palette } from 'lucide-react';
+import { Copy, ExternalLink, Check, Palette, AlertCircle, LogIn, UserPlus, Phone } from 'lucide-react';
 import type { Link, SocialHandle } from '../backend';
+import { normalizeBackendError, isPrerequisiteError } from '../utils/backendErrors';
 
 interface EditableContent {
   title?: string;
@@ -29,6 +31,10 @@ export default function TemplateEditorPage() {
   const { identity } = useInternetIdentity();
   const navigate = useNavigate();
 
+  // Prerequisite checks
+  const { data: isRegistered, isLoading: isRegisteredLoading } = useIsRegistered();
+  const { data: isPhoneVerified, isLoading: isPhoneVerifiedLoading } = useIsPhoneVerified();
+
   const template = templates?.find((t) => t.id === templateId);
 
   const [title, setTitle] = useState('');
@@ -38,6 +44,10 @@ export default function TemplateEditorPage() {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  const [prerequisiteError, setPrerequisiteError] = useState<string | null>(null);
+
+  const isAuthenticated = !!identity;
+  const prerequisitesLoading = isRegisteredLoading || isPhoneVerifiedLoading;
 
   useEffect(() => {
     if (template) {
@@ -100,61 +110,96 @@ export default function TemplateEditorPage() {
       // If bio already has content, ask for confirmation
       if (window.confirm('This will replace your current bio text. Continue?')) {
         setBioText(starterText);
-        toast.success('Bio formula template inserted');
       }
     } else {
-      // If empty, insert directly
       setBioText(starterText);
-      toast.success('Bio formula template inserted');
     }
   };
 
-  const handleSave = async () => {
-    if (!title.trim() || !bioText.trim()) {
-      toast.error('Please fill in title and bio');
+  const checkPrerequisites = (): { canSave: boolean; error: string | null } => {
+    if (!isAuthenticated) {
+      return {
+        canSave: false,
+        error: 'Please log in to save and share your bio page.',
+      };
+    }
+
+    if (prerequisitesLoading) {
+      return { canSave: false, error: null };
+    }
+
+    if (!isRegistered) {
+      return {
+        canSave: false,
+        error: 'Please complete signup to save and share your bio page.',
+      };
+    }
+
+    if (!isPhoneVerified) {
+      return {
+        canSave: false,
+        error: 'Please verify your phone number to save and share your bio page.',
+      };
+    }
+
+    return { canSave: true, error: null };
+  };
+
+  const handleSaveAndShare = async () => {
+    setPrerequisiteError(null);
+
+    // Check prerequisites before attempting to save
+    const { canSave, error } = checkPrerequisites();
+    
+    if (!canSave) {
+      if (error) {
+        setPrerequisiteError(error);
+        toast.error(error);
+      }
       return;
     }
 
-    if (!identity) {
-      toast.error('You must be logged in to save');
+    if (!title.trim() || !bioText.trim()) {
+      toast.error('Please fill in at least the title and bio text');
       return;
     }
 
     try {
-      // Ensure all links and social handles have proper IDs
-      const normalizedLinks = links.map((link, idx) => ({
-        ...link,
-        id: link.id || `link-${Date.now()}-${idx}`,
-      }));
-
-      const normalizedSocialHandles = socialHandles.map((handle, idx) => ({
-        ...handle,
-        id: handle.id || `social-${Date.now()}-${idx}`,
-      }));
-
       await createBioPageMutation.mutateAsync({
-        templateId,
+        templateId: templateId || '',
         title,
         bioText,
-        socialHandles: normalizedSocialHandles,
-        links: normalizedLinks,
+        socialHandles,
+        links,
       });
-      
-      // Generate share URL using principal as shareId
-      const principalId = identity.getPrincipal().toString();
-      const shareId = `${principalId}_${templateId}`;
+
+      const userId = identity?.getPrincipal().toString() || '';
+      const shareId = `${userId}_${templateId}`;
       const url = `${window.location.origin}/share/${shareId}`;
       setShareUrl(url);
       setShowShareDialog(true);
-      
       toast.success('Bio page saved successfully!');
     } catch (error: any) {
-      console.error('Save error:', error);
-      toast.error(error.message || 'Failed to save bio page');
+      const guidance = normalizeBackendError(error);
+      
+      // Show error in toast
+      toast.error(guidance.message);
+      
+      // Set inline error for persistent display
+      setPrerequisiteError(guidance.message);
+      
+      // If there's a navigation target, offer to navigate
+      if (guidance.navigateTo) {
+        setTimeout(() => {
+          if (window.confirm(`${guidance.message}\n\nWould you like to go there now?`)) {
+            navigate({ to: guidance.navigateTo as any });
+          }
+        }, 500);
+      }
     }
   };
 
-  const handleCopyUrl = async () => {
+  const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -165,30 +210,21 @@ export default function TemplateEditorPage() {
     }
   };
 
-  const handleOpenInNewTab = () => {
-    window.open(shareUrl, '_blank', 'noopener,noreferrer');
-  };
-
-  const handleOpenCanva = () => {
-    window.open('https://www.canva.com/', '_blank', 'noopener,noreferrer');
+  const handleOpenLink = () => {
+    window.open(shareUrl, '_blank');
   };
 
   if (templatesLoading) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading template...</p>
-          </div>
-        </div>
+      <div className="container mx-auto px-4 py-16">
+        <div className="text-center">Loading template...</div>
       </div>
     );
   }
 
   if (!template) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-16">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Template not found</h1>
           <Button onClick={() => navigate({ to: '/templates' })}>
@@ -199,137 +235,203 @@ export default function TemplateEditorPage() {
     );
   }
 
+  const { canSave } = checkPrerequisites();
+
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="max-w-5xl mx-auto space-y-8">
-        <div className="space-y-3">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Customize Your Bio Page</h1>
-          <p className="text-muted-foreground text-lg">
-            Edit your template and add your personal touch
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate({ to: '/templates' })}
+          className="mb-4"
+        >
+          ← Back to Templates
+        </Button>
+        <h1 className="text-3xl font-bold mb-2">Customize Your Bio</h1>
+        <p className="text-muted-foreground">
+          Template: {template.name}
+        </p>
+      </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <Card className="shadow-sm border-border/60">
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm font-medium">Page Title</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Your Name or Brand"
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={bioText}
-                    onChange={(e) => setBioText(e.target.value)}
-                    placeholder="Tell people about yourself..."
-                    rows={6}
-                    className="resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Use the Bio Formula helper below for inspiration
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <BioFormulaHelper onInsert={handleInsertBioFormula} />
-
-            <Card className="shadow-sm border-border/60 bg-gradient-to-br from-card to-accent/5">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-primary" />
-                  <CardTitle>Design with Canva</CardTitle>
-                </div>
-                <CardDescription>
-                  Create stunning graphics and visuals in Canva, then return to Liinks to add them to your bio page
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+      {prerequisiteError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Action Required</AlertTitle>
+          <AlertDescription className="space-y-2">
+            <p>{prerequisiteError}</p>
+            <div className="flex gap-2 mt-3">
+              {!isAuthenticated && (
                 <Button
-                  onClick={handleOpenCanva}
+                  size="sm"
                   variant="outline"
-                  className="w-full"
+                  onClick={() => {
+                    // Login button would trigger Internet Identity
+                    toast.info('Please use the Login button in the header');
+                  }}
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Open Canva
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Log In
                 </Button>
-              </CardContent>
-            </Card>
+              )}
+              {isAuthenticated && !isRegistered && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate({ to: '/signup', search: { reason: 'registration-required' } })}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Complete Signup
+                </Button>
+              )}
+              {isAuthenticated && isRegistered && !isPhoneVerified && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate({ to: '/verify-phone' })}
+                >
+                  <Phone className="mr-2 h-4 w-4" />
+                  Verify Phone
+                </Button>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
+      <div className="grid gap-6">
+        <BioFormulaHelper onInsert={handleInsertBioFormula} />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Basic Information</CardTitle>
+            <CardDescription>Your profile title and bio</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title / Name</Label>
+              <Input
+                id="title"
+                placeholder="Your Name or Brand"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bioText">Bio Text</Label>
+              <Textarea
+                id="bioText"
+                placeholder="Tell your story..."
+                value={bioText}
+                onChange={(e) => setBioText(e.target.value)}
+                rows={6}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Tip: Use the Bio Formula Helper above for inspiration
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Social Media</CardTitle>
+            <CardDescription>Add your social media profiles</CardDescription>
+          </CardHeader>
+          <CardContent>
             <SocialHandlesEditor
               socialHandles={socialHandles}
               onChange={setSocialHandles}
             />
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Links</CardTitle>
+            <CardDescription>Add important links</CardDescription>
+          </CardHeader>
+          <CardContent>
             <LinksEditor links={links} onChange={setLinks} />
+          </CardContent>
+        </Card>
 
-            <Card className="border-primary/30 bg-gradient-to-br from-card to-primary/5 shadow-premium">
-              <CardContent className="pt-6">
-                <Button
-                  className="w-full h-12 text-base shadow-sm hover:shadow transition-all"
-                  size="lg"
-                  onClick={handleSave}
-                  disabled={createBioPageMutation.isPending}
-                >
-                  {createBioPageMutation.isPending ? 'Saving...' : 'Save & Share Bio Page'}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Design with Canva
+            </CardTitle>
+            <CardDescription>
+              Want to customize the visual design? Use Canva to create stunning graphics
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => window.open('https://www.canva.com', '_blank')}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Open Canva
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3">
+              Create your design in Canva, then come back here to add your content and links
+            </p>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={() => navigate({ to: '/templates' })}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveAndShare}
+            disabled={createBioPageMutation.isPending || prerequisitesLoading || !canSave}
+          >
+            {createBioPageMutation.isPending ? 'Saving...' : 'Save & Share'}
+          </Button>
         </div>
       </div>
 
-      {/* Share Dialog */}
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Your Bio Page is Ready!</DialogTitle>
+            <DialogTitle>Your Bio Page is Ready! 🎉</DialogTitle>
             <DialogDescription>
-              Share this link with your audience
+              Share your unique link with your audience
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Input
-                value={shareUrl}
-                readOnly
-                className="flex-1"
-              />
+              <Input value={shareUrl} readOnly className="flex-1" />
               <Button
                 size="icon"
                 variant="outline"
-                onClick={handleCopyUrl}
+                onClick={handleCopyLink}
               >
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <div className="flex gap-2">
               <Button
-                className="flex-1"
                 variant="outline"
-                onClick={handleOpenInNewTab}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open in New Tab
-              </Button>
-              <Button
                 className="flex-1"
-                onClick={() => setShowShareDialog(false)}
+                onClick={handleOpenLink}
               >
-                Done
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Preview
+              </Button>
+              <Button className="flex-1" onClick={handleCopyLink}>
+                {copied ? 'Copied!' : 'Copy Link'}
               </Button>
             </div>
           </div>

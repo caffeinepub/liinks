@@ -13,9 +13,7 @@ import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -141,6 +139,17 @@ actor {
 
   func generateOtpId(principal : Principal, phoneNumber : PhoneNumber) : OtpId {
     principal.toText().concat(phoneNumber);
+  };
+
+  // Helper function to check if a user is registered (has a profile)
+  func isUserRegistered(principal : Principal) : Bool {
+    userProfiles.containsKey(principal);
+  };
+
+  // Helper function to check if caller has user-level access
+  // A user has access if they are registered OR have explicit user/admin role
+  func hasUserAccess(caller : Principal) : Bool {
+    isUserRegistered(caller) or AccessControl.hasPermission(accessControlState, caller, #user);
   };
 
   // System Bio Templates
@@ -320,15 +329,16 @@ actor {
     };
     userProfiles.add(caller, profile);
 
-    // Automatically upgrade #guest to #user after successful registration
-    AccessControl.assignRole(accessControlState, caller, caller, #user);
+    // Note: Role assignment removed to fix registration flow
+    // Registered users (those with profiles) are automatically granted user-level access
+    // through the hasUserAccess() helper function used in authorization checks
   };
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     // Check if user is registered (has a profile)
     // A registered user should be able to access their profile
-    if (not userProfiles.containsKey(caller)) {
-      Runtime.trap("Profile not found. Please register first");
+    if (not hasUserAccess(caller)) {
+      Runtime.trap("Unauthorized: Only registered users can access profiles");
     };
     userProfiles.get(caller);
   };
@@ -342,8 +352,8 @@ actor {
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     // Check if user is registered (has a profile)
-    if (not userProfiles.containsKey(caller)) {
-      Runtime.trap("Profile not found. Please register first");
+    if (not hasUserAccess(caller)) {
+      Runtime.trap("Unauthorized: Only registered users can save profiles");
     };
     if (profile.userId != caller) {
       Runtime.trap("Unauthorized: Can only save your own profile");
@@ -375,9 +385,9 @@ actor {
   };
 
   public shared ({ caller }) func initiateSubscription(tier : SubscriptionTier, duration : Time.Time, paymentReference : Text) : async () {
-    // Verify user profile exists (registered users only)
-    if (not userProfiles.containsKey(caller)) {
-      Runtime.trap("Profile not found. Please register first");
+    // Verify user has access (registered or explicit user role)
+    if (not hasUserAccess(caller)) {
+      Runtime.trap("Unauthorized: Only registered users can initiate subscriptions");
     };
 
     // Store temporary subscription details for the user
@@ -392,9 +402,9 @@ actor {
   };
 
   public shared ({ caller }) func confirmSubscription() : async () {
-    // Verify user profile exists (registered users only)
-    if (not userProfiles.containsKey(caller)) {
-      Runtime.trap("Profile not found. Please register first");
+    // Verify user has access (registered or explicit user role)
+    if (not hasUserAccess(caller)) {
+      Runtime.trap("Unauthorized: Only registered users can confirm subscriptions");
     };
 
     let tempSubscription = switch (pendingSubscriptions.get(caller)) {
@@ -431,9 +441,9 @@ actor {
   };
 
   public query ({ caller }) func hasActiveSubscription() : async Bool {
-    // Verify user profile exists (registered users only)
-    if (not userProfiles.containsKey(caller)) {
-      Runtime.trap("Profile not found. Please register first");
+    // Verify user has access (registered or explicit user role)
+    if (not hasUserAccess(caller)) {
+      Runtime.trap("Unauthorized: Only registered users can check subscription status");
     };
     switch (userProfiles.get(caller)) {
       case (?profile) {
@@ -449,9 +459,9 @@ actor {
   };
 
   public shared ({ caller }) func createBioPage(templateId : TemplateId, title : Text, bioText : Text, socialHandles : [SocialHandle], links : [Link]) : async () {
-    // Verify user profile exists (registered users only)
-    if (not userProfiles.containsKey(caller)) {
-      Runtime.trap("Profile not found. Please register first");
+    // Verify user has access (registered or explicit user role)
+    if (not hasUserAccess(caller)) {
+      Runtime.trap("Unauthorized: Only registered users can create bio pages");
     };
 
     let bioPage : BioPage = {
@@ -477,9 +487,9 @@ actor {
     thumbnail : Storage.ExternalBlob,
     editableContent : Blob,
   ) : async TemplateId {
-    // Verify user profile exists (registered users only)
-    if (not userProfiles.containsKey(caller)) {
-      Runtime.trap("Profile not found. Please register first");
+    // Verify user has access (registered or explicit user role)
+    if (not hasUserAccess(caller)) {
+      Runtime.trap("Unauthorized: Only registered users can upload templates");
     };
 
     let profile = switch (userProfiles.get(caller)) {

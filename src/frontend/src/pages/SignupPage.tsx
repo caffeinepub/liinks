@@ -5,10 +5,11 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Alert, AlertDescription } from '../components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { toast } from 'sonner';
-import { Info, Loader2 } from 'lucide-react';
+import { Info, Loader2, AlertCircle } from 'lucide-react';
 import PhoneOtpGate from '../components/PhoneOtpGate';
+import { normalizeBackendError } from '../utils/backendErrors';
 
 export default function SignupPage() {
   const [step, setStep] = useState<'phone-verification' | 'profile'>('phone-verification');
@@ -16,6 +17,7 @@ export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const registerMutation = useRegisterProfile();
   const search = useSearch({ from: '/signup' });
@@ -36,10 +38,12 @@ export default function SignupPage() {
   const handlePhoneVerified = (phoneNumber: string) => {
     setVerifiedPhoneNumber(phoneNumber);
     setStep('profile');
+    setErrorMessage(null); // Clear any previous errors
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null); // Clear previous errors
 
     if (!firstName || !lastName || !email || !verifiedPhoneNumber) {
       toast.error('Please fill in all fields');
@@ -56,7 +60,20 @@ export default function SignupPage() {
       toast.success('Profile created successfully!');
       navigate({ to: '/templates' });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create profile');
+      const guidance = normalizeBackendError(error);
+      
+      // Show toast for immediate feedback
+      toast.error(guidance.message);
+      
+      // Set inline error for persistent display
+      setErrorMessage(guidance.message);
+      
+      // If already registered, navigate to templates
+      if (guidance.navigateTo === '/templates') {
+        setTimeout(() => {
+          navigate({ to: '/templates' });
+        }, 2000);
+      }
     }
   };
 
@@ -85,6 +102,17 @@ export default function SignupPage() {
                 </AlertDescription>
               </Alert>
             )}
+            
+            {errorMessage && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Registration Error</AlertTitle>
+                <AlertDescription className="text-sm">
+                  {errorMessage}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -94,6 +122,7 @@ export default function SignupPage() {
                     placeholder="John"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    disabled={registerMutation.isPending}
                     required
                   />
                 </div>
@@ -104,6 +133,7 @@ export default function SignupPage() {
                     placeholder="Doe"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    disabled={registerMutation.isPending}
                     required
                   />
                 </div>
@@ -117,6 +147,7 @@ export default function SignupPage() {
                   placeholder="john@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={registerMutation.isPending}
                   required
                 />
               </div>

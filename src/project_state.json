@@ -1,447 +1,30 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 57,
-  "summary": "Subscription-based Liinks platform (link-in-bio template marketplace) on Internet Computer with Motoko backend and React/Vite/Tailwind frontend; includes influencer/category template library, signup with user profile fields, and premium/pro subscription paywall with INR payments (Razorpay + UPI QR upload/receiver details) gating template copying/customization and pro template uploads.",
+  "projectStateVersion": 3,
+  "summary": "New project",
   "architectural_notes": [
-    "Backend is implemented in Motoko and composes reusable modules for authorization (access control) and blob storage.",
-    "Frontend is a React + Vite app using TailwindCSS and shadcn/ui component library.",
-    "Authentication integrates Internet Identity via frontend hooks and actor creation utilities.",
-    "Project includes an ICP deployment/build template with canister configuration, scripts, and workspace tooling.",
-    "Payments must support Indian Rupees pricing tiers (₹199 Premium, ₹499 Pro) and integrate Razorpay; include UPI receiver ID and QR upload UI for payments.",
-    "Frontend introduces consolidated query/hooks layer to fetch subscription/payment configuration and keep subscription state in sync post-checkout.",
-    "Backend exposes/configures receiver payment details (e.g., UPI ID) for consumption by Checkout UI.",
-    "Upgraded Motoko authorization and blob-storage components to v4.0.0 (component refresh across backend modules).",
-    "Refreshed/expanded ICP React build-template workspace and tooling (component:core-infrastructure v1.0.2; build-template-react v1.0.0; shadcn-ui v1.0.0).",
-    "Project includes GitHub export tooling/integration for ICP CLI workflows (component:github-export-icp-cli v1.0.0)."
+    "Role assignment is currently restricted to admins; non-admin attempts trigger 'only admins can assign user role' error and may block onboarding/create-share flow.",
+    "Create & Share depends on authentication/profile completion/phone verification; backend may be blocking requests when prerequisites aren’t met."
   ],
   "known_issues": [
-    "Payments/checkout currently not working for subscription purchase (user reports paying is not working).",
-    "Pricing page: Premium and Pro subscription feature lists are currently the same; missing/incorrect differentiation between tiers.",
-    "Canva insertion/integration is missing (user reports: “there is no canva inserted”).",
-    "Template customization/editing currently not working (user reports templates can’t be customized)."
+    "Create & Share button appears unresponsive or blocked for some users depending on auth/profile/verification state.",
+    "Users encounter error 'only admins can assign user role' when attempting actions that should be allowed for regular users (role/onboarding permissions misconfigured)."
   ],
   "isFixRequest": true,
-  "generatedImages": [
-    {
-      "filename": "frontend/public/assets/generated/template-thumb-abstract-01.dim_800x1067.png",
-      "description": "Generated template thumbnail asset (abstract style) for template gallery/cards.",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "frontend/public/assets/generated/template-thumb-cinematic-01.dim_800x1067.png",
-      "description": "Generated template thumbnail asset (cinematic style) for template gallery/cards.",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "frontend/public/assets/generated/template-thumb-editorial-01.dim_800x1067.png",
-      "description": "Generated template thumbnail asset (editorial style) for template gallery/cards.",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "frontend/public/assets/generated/template-thumb-lifestyle-01.dim_800x1067.png",
-      "description": "Generated template thumbnail asset (lifestyle style) for template gallery/cards.",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "frontend/public/assets/generated/template-thumb-luxury-01.dim_800x1067.png",
-      "description": "Generated template thumbnail asset (luxury style) for template gallery/cards.",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "frontend/public/assets/generated/template-thumb-neon-01.dim_800x1067.png",
-      "description": "Generated template thumbnail asset (neon style) for template gallery/cards.",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "frontend/public/assets/generated/template-thumb-playful-01.dim_800x1067.png",
-      "description": "Generated template thumbnail asset (playful style) for template gallery/cards.",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    },
-    {
-      "filename": "frontend/public/assets/generated/template-thumb-tech-01.dim_800x1067.png",
-      "description": "Generated template thumbnail asset (tech style) for template gallery/cards.",
-      "targetWidth": 800,
-      "targetHeight": 1067
-    }
-  ],
   "existing_features": [
     {
-      "id": "IF-1",
-      "title": "Motoko backend canister with access control (authorization mixin)",
-      "synonyms": [
-        "authorization",
-        "access control"
-      ],
-      "description": "Backend includes reusable authorization/access-control modules and integrates authorization mixins into the main canister.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-2",
-      "title": "Motoko blob storage canister module",
-      "synonyms": [
-        "blob storage",
-        "asset storage"
-      ],
-      "description": "Backend includes blob-storage mixin and storage implementation for handling uploaded binary assets (e.g., templates/images).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-3",
-      "title": "Frontend app scaffold (React + Vite + Tailwind + shadcn/ui)",
-      "synonyms": [
-        "frontend scaffold",
-        "UI kit"
-      ],
-      "description": "React app configured with Tailwind and a large set of shadcn/ui components plus project ESLint rules and tooling.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-4",
-      "title": "Internet Identity authentication hook + actor wiring",
-      "synonyms": [
-        "Internet Identity",
-        "auth",
-        "useActor"
-      ],
-      "description": "Frontend includes hooks/utilities to authenticate with Internet Identity and create backend actors for canister calls.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-5",
-      "title": "Landing page UI",
-      "synonyms": [
-        "home page"
-      ],
-      "description": "Landing page implemented as a dedicated route/page in the frontend.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-6",
-      "title": "Pricing page UI",
-      "synonyms": [],
-      "description": "Pricing page implemented as a dedicated route/page in the frontend.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-7",
-      "title": "Signup page UI",
-      "synonyms": [
-        "registration"
-      ],
-      "description": "Signup page implemented as a dedicated route/page.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-8",
-      "title": "Checkout page UI",
-      "synonyms": [
-        "payments"
-      ],
-      "description": "Checkout page implemented as a dedicated route/page.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-9",
-      "title": "Template gallery, detail, and editor pages",
-      "synonyms": [
-        "template browsing",
-        "template editing"
-      ],
-      "description": "Frontend pages for browsing templates, viewing template details, and editing templates (TemplateGalleryPage, TemplateDetailPage, TemplateEditorPage).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-10",
-      "title": "Template upload page and asset upload utilities",
-      "synonyms": [
-        "upload template",
-        "asset uploader"
-      ],
-      "description": "Frontend includes UploadTemplatePage and supporting storage client utilities for uploading and managing assets.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-11",
-      "title": "Template editor components for links, social handles, and payment QR upload",
-      "synonyms": [
-        "LinksEditor",
-        "SocialHandlesEditor",
-        "PaymentQrUploader"
-      ],
-      "description": "Reusable UI components enabling editing of links and social handles and uploading a payment QR image, plus supporting template/brand UI components.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-12",
-      "title": "ICP build/deploy template and project scaffolding",
-      "synonyms": [
-        "build template",
-        "deployment template"
-      ],
-      "description": "Included build-template with Dockerfile, scripts (prune/resize images), canister YAMLs, workspace configs, and deployment scripts for ICP.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-13",
-      "title": "Influencer/category template library with seeded published templates",
-      "synonyms": [
-        "template library",
-        "seed templates",
-        "categories"
-      ],
-      "description": "Includes an initial set of premium-quality, published templates organized by the existing category list so the Template Gallery is populated for new users after signup.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "IF-14",
-      "title": "Subscription/paywall gating for Premium and Pro tiers",
-      "synonyms": [
-        "paywall",
-        "subscription gating",
-        "premium/pro access"
-      ],
-      "description": "Implements Premium (₹199) and Pro (₹499) subscription state and gates actions like template copying/customization and Pro-only template uploads based on active subscription.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-15",
-      "title": "INR checkout flow with Razorpay/UPI details and QR upload/display",
-      "synonyms": [
-        "Razorpay",
-        "UPI",
-        "checkout"
-      ],
-      "description": "Checkout supports INR pricing and displays receiver payment details (e.g., UPI ID) and UPI QR, enabling users to complete the payment confirmation flow for subscription activation.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-16",
-      "title": "Backend-configurable receiver payment details surfaced in Checkout",
-      "synonyms": [
-        "receiver config",
-        "UPI receiver",
-        "payment settings"
-      ],
-      "description": "Receiver payment details (at minimum receiver UPI ID) are configurable in the backend and fetched/displayed in the frontend Checkout instead of being hardcoded.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "IF-17",
-      "title": "Expanded signup form fields (first/last name, phone, email)",
-      "synonyms": [
-        "signup fields",
-        "registration fields"
-      ],
-      "description": "Signup UX collects first name, last name, phone number, and email as part of registration.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-18",
-      "title": "In-app upgrade CTAs from template browsing to Pricing/Checkout",
-      "synonyms": [
-        "upgrade CTA",
-        "pricing navigation"
-      ],
-      "description": "Non-subscribed users are prompted within template browsing (gallery/detail) to upgrade, with clear calls-to-action navigating to Pricing and then Checkout.",
+      "id": "feature-improve-frontend-error-handling-for-signup-registration-so-that-if-any-backend-authorization-role-assignment-error-occurs-the-ui-shows-a-clear-english-error-message-and-provides-a-next-step-e-g-retry-registration-verify-phone-or-contact-admin-instead-of-appearing-to-do-nothing",
+      "title": "Improve frontend error handling for signup/registration so that if any backend authorization/role assignment error occurs, the UI shows a clear English error message and provides a next step (e.g., retry registration, verify phone, or contact admin) instead of appearing to do nothing.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "IF-19",
-      "title": "End-to-end subscription activation with live UI state updates",
-      "synonyms": [
-        "subscription refresh",
-        "post-checkout activation"
-      ],
-      "description": "After payment confirmation on Checkout, subscription state updates in-app and gated actions become available without requiring manual page refresh.",
+      "id": "feature-ensure-the-create-share-save-share-bio-page-flow-fails-loudly-with-actionable-messages-when-prerequisites-are-missing-not-logged-in-not-registered-phone-not-verified-rather-than-silently-failing",
+      "title": "Ensure the Create & Share (Save & Share Bio Page) flow fails loudly with actionable messages when prerequisites are missing (not logged in, not registered, phone not verified) rather than silently failing.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "IF-20",
-      "title": "Public shared bio page (shareable link-in-bio view)",
-      "synonyms": [
-        "SharedBioPage",
-        "public profile page",
-        "share link"
-      ],
-      "description": "Frontend includes a dedicated SharedBioPage route to render a public, shareable link-in-bio view for a template/profile without requiring the editor flow.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "feature-add-explicit-payment-method-options-in-the-checkout-ui-for-inr-subscriptions-razorpay-google-pay-gpay-and-phonepe-the-page-must-present-these-as-clear-selectable-options-and-guide-the-user-through-completing-payment-for-the-selected-tier-amount",
-      "title": "Add explicit payment method options in the Checkout UI for INR subscriptions: Razorpay, Google Pay (GPay), and PhonePe. The page must present these as clear selectable options and guide the user through completing payment for the selected tier amount.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-upi-intent-deep-link-support-for-google-pay-gpay-and-phonepe-on-the-checkout-page-using-the-configured-receiver-upi-id-and-the-correct-plan-amount-so-that-tapping-the-button-opens-the-corresponding-upi-app-when-available-and-gracefully-falls-back-to-copy-to-clipboard-if-not",
-      "title": "Implement UPI intent/deep-link support for Google Pay (GPay) and PhonePe on the Checkout page using the configured receiver UPI ID and the correct plan amount, so that tapping the button opens the corresponding UPI app when available (and gracefully falls back to copy-to-clipboard if not).",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-capture-the-user-s-payment-reference-transaction-id-during-confirmation-and-persist-it-in-the-backend-as-part-of-the-subscription-activation-record-so-support-can-audit-what-the-user-entered-update-the-api-surface-as-needed-and-keep-the-frontend-confirmation-form-wired-to-the-backend-call",
-      "title": "Capture the user’s payment reference / transaction ID during confirmation and persist it in the backend as part of the subscription activation record (so support can audit what the user entered). Update the API surface as needed and keep the frontend confirmation form wired to the backend call.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-remove-the-openai-chatgpt-api-integration-from-the-template-detail-page-and-replace-it-with-a-fully-in-app-no-network-bio-writing-assistant-so-the-feature-works-reliably-without-requiring-an-api-key",
-      "title": "Remove the OpenAI/ChatGPT API integration from the Template Detail page and replace it with a fully in-app (no network) bio-writing assistant so the feature works reliably without requiring an API key.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-template-detail-page-assistant-section-copy-and-interactions-to-clearly-communicate-what-it-does-bio-inspiration-suggested-draft-and-provide-an-easy-way-for-the-user-to-use-the-generated-text-e-g-copy-to-clipboard-button-for-the-suggested-bio-content",
-      "title": "Update the Template Detail page assistant section copy and interactions to clearly communicate what it does (bio inspiration + suggested draft) and provide an easy way for the user to use the generated text (e.g., copy-to-clipboard button for the suggested bio content).",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-subscription-benefit-lists-so-premium-and-pro-show-clearly-different-accurate-features-no-identical-duplicated-lists-on-the-pricing-page-and-add-any-missing-pro-only-benefits-that-are-actually-implemented-in-the-app",
-      "title": "Update the subscription benefit lists so Premium and Pro show clearly different, accurate features (no identical/duplicated lists) on the Pricing page, and add any missing Pro-only benefits that are actually implemented in the app.",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-keep-the-checkout-page-plan-benefits-summary-what-you-ll-get-consistent-with-the-updated-pricing-plan-benefit-lists-including-showing-pro-only-items-only-when-tier-pro-and-avoiding-duplicated-premium-pro-items",
-      "title": "Keep the Checkout page plan-benefits summary (“What you'll get”) consistent with the updated Pricing plan benefit lists, including showing Pro-only items only when tier=pro and avoiding duplicated Premium/Pro items.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-single-source-of-truth-in-the-frontend-for-the-provided-platform-system-prompt-and-about-us-copy-using-the-exact-tailored-text-and-ensure-it-is-importable-across-the-app-without-duplicating-strings",
-      "title": "Add a single source of truth in the frontend for the provided Platform System Prompt and About Us copy, using the exact tailored text, and ensure it is importable across the app without duplicating strings.",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-an-about-page-that-displays-the-provided-about-us-tailored-copy-in-a-readable-layout-add-a-new-route-for-it-and-add-navigation-access-to-it-from-the-header-and-footer",
-      "title": "Create an About page that displays the provided About Us (Tailored) copy in a readable layout, add a new route for it, and add navigation access to it from the header and footer.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-visible-canva-entry-point-in-the-template-editor-flow-so-users-can-open-canva-while-customizing-a-bio-page-the-current-templateeditorpage-has-no-canva-option-the-ui-must-include-a-clearly-labeled-button-link-that-opens-canva-in-a-new-tab-and-brief-guidance-text-explaining-that-users-can-create-graphics-in-canva-and-then-return-to-liinks-to-continue-editing",
-      "title": "Add a visible “Canva” entry point in the Template Editor flow so users can open Canva while customizing a bio page (the current TemplateEditorPage has no Canva option). The UI must include a clearly labeled button/link that opens Canva in a new tab and brief guidance text explaining that users can create graphics in Canva and then return to Liinks to continue editing.",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-top-level-navigation-link-labeled-canva-in-the-header-navigation-desktop-and-mobile-so-authenticated-and-unauthenticated-users-can-access-canva-from-anywhere-in-the-app",
-      "title": "Add a top-level navigation link labeled “Canva” in the header navigation (desktop and mobile) so authenticated and unauthenticated users can access Canva from anywhere in the app.",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-improve-the-frontend-registered-user-gating-so-that-if-loading-the-caller-profile-fails-e-g-backend-throws-unauthorized-the-app-shows-a-clear-message-and-routes-the-user-to-signup-instead-of-leaving-the-user-stuck-or-preventing-template-customization",
-      "title": "Improve the frontend \"registered user\" gating so that if loading the caller profile fails (e.g., backend throws Unauthorized), the app shows a clear message and routes the user to /signup (instead of leaving the user stuck or preventing template customization).",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-audit-and-fix-the-template-editor-load-save-flow-so-templates-are-actually-customizable-end-to-end-selecting-a-template-in-templatedetailpage-must-open-templateeditorpage-with-populated-fields-edits-must-update-state-and-save-must-persist-successfully-and-show-the-share-dialog",
-      "title": "Audit and fix the template editor load/save flow so templates are actually customizable end-to-end: selecting a template in TemplateDetailPage must open TemplateEditorPage with populated fields, edits must update state, and Save must persist successfully and show the share dialog.",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-an-explicit-canva-entry-point-on-the-template-detail-page-so-users-can-open-canva-while-viewing-a-template-not-only-from-the-editor-header-the-entry-point-must-open-https-www-canva-com-in-a-new-tab-and-include-brief-guidance-text-in-english-about-creating-graphics-in-canva-and-returning-to-liinks-to-continue-customizing",
-      "title": "Add an explicit Canva entry point on the Template Detail page so users can open Canva while viewing a template (not only from the editor/header). The entry point must open https://www.canva.com/ in a new tab and include brief guidance text in English about creating graphics in Canva and returning to Liinks to continue customizing.",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-frontend-ui-flow-to-verify-a-phone-number-via-otp-before-completing-signup-update-the-signup-page-to-include-an-otp-request-otp-entry-step-and-only-allow-profile-creation-after-successful-otp-verification",
-      "title": "Add frontend UI flow to verify a phone number via OTP before completing signup: update the Signup page to include an OTP request + OTP entry step and only allow profile creation after successful OTP verification.",
-      "reqIds": [
-        "REQ-23"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-dedicated-phone-verification-route-and-guard-when-an-authenticated-user-is-redirected-to-signup-due-to-registration-required-ensure-the-app-can-route-them-into-a-phone-verification-step-first-or-show-the-verification-step-inline-so-users-are-not-blocked-from-completing-registration",
-      "title": "Add a dedicated phone verification route and guard: when an authenticated user is redirected to /signup due to registration-required, ensure the app can route them into a phone verification step first (or show the verification step inline) so users are not blocked from completing registration.",
-      "reqIds": [
-        "REQ-24"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-wire-new-frontend-react-query-hooks-for-otp-operations-to-the-backend-actor-so-otp-request-verify-flows-call-the-canister-and-update-ui-state-cleanly",
-      "title": "Wire new frontend React Query hooks for OTP operations to the backend actor so OTP request/verify flows call the canister and update UI state cleanly.",
-      "reqIds": [
-        "REQ-25"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-clear-in-app-fallback-message-explaining-otp-delivery-limitations-if-sms-delivery-is-not-available-when-an-otp-is-requested-the-ui-must-display-an-english-message-indicating-how-the-user-can-obtain-the-otp-in-the-current-environment-e-g-shown-in-app-dev-mode-rather-than-implying-an-sms-was-sent",
-      "title": "Add a clear in-app fallback message explaining OTP delivery limitations if SMS delivery is not available: when an OTP is requested, the UI must display an English message indicating how the user can obtain the OTP in the current environment (e.g., shown in-app/dev mode) rather than implying an SMS was sent.",
-      "reqIds": [
-        "REQ-26"
       ],
       "version": 1
     }
@@ -449,75 +32,32 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add/enable payment methods: Razorpay plus UPI apps support (GPay and PhonePe) for INR subscription checkout",
+      "summary": "Fix Create & Share flow so it doesn’t silently fail; ensure proper handling when user is not logged in/registered/verified and allow create/share to proceed when requirements are met.",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Fix the subscription purchase flow so payment confirmation reliably activates Premium/Pro for registered users (resolve the current “paying is not working” issue). Ensure the backend authorization state allows a newly registered user to call subscription APIs without trapping as unauthorized.",
-      "reqIds": [
-        "REQ-5"
-      ],
+      "summary": "Add clear UI error messaging for Create & Share (and related actions) instead of appearing to do nothing; surface backend/auth/validation errors to the user.",
+      "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Update Pricing/Subscriptions copy so Premium and Pro tiers list distinct benefits (fix currently identical feature lists) and add any missing Pro-only features/benefits to the Pro plan description.",
+      "summary": "Resolve role-assignment/admin permission issue: users hitting 'only admins can assign user role' should not be blocked from normal onboarding/usage; adjust permission checks/role assignment flow accordingly.",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Insert the tailored Platform System Prompt and About Us text into the platform (integrate into product copy/config so it’s used by the assistant and surfaced in the appropriate UI/marketing sections).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Add/restore Canva insertion/integration (Canva not currently inserted/available where expected in the product flow/UI).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Fix template customization/editing flow so users can actually customize templates (current issue: templates can’t be customized).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Fix backend authorization so a newly registered user can reliably access profile, subscription, and bio-page creation APIs (no \"Unauthorized\" traps after signup). Specifically, ensure that after calling registerProfile, the caller is recognized as a permitted \"user\" by the access control checks used in getCallerUserProfile, initiateSubscription/confirmSubscription/hasActiveSubscription, and createBioPage.",
+      "summary": "Fix the backend registration flow so newly registered users are not blocked by the error \"Only admins can assign user role\" when assigning the default user role after signup.",
       "reqIds": [
-        "REQ-17"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Implement phone-number OTP verification for signup and login (replace/avoid email-based verification and email welcome flows).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Implement backend support for phone-number OTP verification tied to the authenticated Internet Identity principal: (1) request an OTP for a provided phone number, (2) verify the OTP, and (3) query whether the caller’s phone number is verified.",
-      "reqIds": [
-        "REQ-21"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Enforce phone verification in the backend for profile registration and registered-user flows: require that the caller has a verified phone number before allowing `registerProfile`, and ensure that endpoints that assume a registered user provide a clear error when the caller is not verified/registered.",
-      "reqIds": [
-        "REQ-22"
+        "REQ-1"
       ],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "Liinks",
+  "projectName": "Fix 'Only admins can assign user role' blocking registration and Create & Share flow",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
